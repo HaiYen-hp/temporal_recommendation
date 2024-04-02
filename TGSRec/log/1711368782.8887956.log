@@ -1,0 +1,9 @@
+2024-03-25 12:13:02,888 - root - INFO - Namespace(data='ml-100k', bs=200, prefix='ml100k_bce', n_degree=35, n_head=2, n_epoch=200, n_layer=3, lr=0.001, drop_out=0.3, reg=0.3, gpu=0, node_dim=64, time_dim=64, agg_method='attn', attn_mode='prod', time='time', uniform=True, new_node=False, samplerate=1.0, popnegsample=False, timepopnegsample=False, negsampleeval=2000, disencomponents=None)
+2024-03-25 12:13:03,607 - model - INFO - Aggregation uses attention model
+2024-03-25 12:13:03,610 - model - INFO - Using scaled prod attention
+2024-03-25 12:13:03,612 - model - INFO - Using scaled prod attention
+2024-03-25 12:13:03,615 - model - INFO - Using scaled prod attention
+2024-03-25 12:13:03,615 - model - INFO - Using time encoding
+2024-03-25 12:13:22,361 - root - INFO - num of training instances: 80003
+2024-03-25 12:13:22,361 - root - INFO - num of batches per epoch: 401
+2024-03-25 12:13:22,364 - root - INFO - start 0 epoch

@@ -1,0 +1,6 @@
+2024-03-28 07:29:57,915 - root - INFO - Namespace(data='ml-100k', bs=600, prefix='ml100k_bce', n_degree=50, n_head=2, n_epoch=50, n_layer=2, lr=0.002, drop_out=0.3, reg=0.3, gpu=1, node_dim=16, time_dim=32, agg_method='lstm', attn_mode='prod', time='time', uniform=True, new_node=False, samplerate=1.0, popnegsample=False, timepopnegsample=False, negsampleeval=1000, disencomponents=None)
+2024-03-28 07:29:58,685 - model - INFO - Aggregation uses LSTM model
+2024-03-28 07:29:58,687 - model - INFO - Using time encoding
+2024-03-28 07:30:08,922 - root - INFO - num of training instances: 80003
+2024-03-28 07:30:08,923 - root - INFO - num of batches per epoch: 134
+2024-03-28 07:30:08,926 - root - INFO - start 0 epoch

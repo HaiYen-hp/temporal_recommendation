@@ -1,0 +1,260 @@
+TimplyRec
+R1
+embedding_size = 32
+batch_size = 256
+learning_rate = 0.001
+patience = 10
+n_epoch = 50
+sequence_length = 5
+width = 128
+depth = 4
+dropout_rate = 0.1
+
+Best HR@30  : 0.7621
+Best HR@50   : 0.8453
+Best RECALL@30  : 0.1165
+Best RECALL@50  : 0.1817
+Best NDCG@30 : 0.3616
+Best NDCG@50: 0.3772
+
+R2
+embedding_size = 64
+batch_size = 300
+learning_rate = 0.001
+patience = 10
+n_epoch = 100
+sequence_length = 10
+width = 128
+depth = 5
+dropout_rate = 0.12
+
+Best HR@30  : 0.7552
+Best HR@50   : 0.843
+Best RECALL@30  : 0.1167
+Best RECALL@50  : 0.1838
+Best NDCG@30 : 0.3518
+Best NDCG@50: 0.3683
+
+R3
+embedding_size = 64
+batch_size = 500
+learning_rate = 0.0017
+patience = 10
+n_epoch = 30
+sequence_length = 5
+width = 256
+depth = 7
+dropout_rate = 0.15
+
+Best HR@30  : 0.7702
+Best HR@50   : 0.8464
+Best RECALL@30  : 0.1192
+Best RECALL@50  : 0.183
+Best NDCG@30 : 0.3595
+Best NDCG@50: 0.3738
+
+R4
+embedding_size = 64
+batch_size = 600
+learning_rate = 0.002
+patience = 10
+n_epoch = 50
+sequence_length = 5
+width = 128
+depth = 6
+dropout_rate = 0.2
+
+Best HR@30  : 0.7575
+Best HR@50   : 0.843
+Best RECALL@30  : 0.1189
+Best RECALL@50  : 0.1908
+Best NDCG@30 : 0.371
+Best NDCG@50: 0.387
+
+R5
+
+embedding_size = 64
+batch_size = 600
+learning_rate = 0.0026
+patience = 10
+n_epoch = 60
+sequence_length = 5
+width = 128
+depth = 6
+dropout_rate = 0.15
+
+Best HR@30  : 0.7679
+Best HR@50   : 0.8499
+Best RECALL@30  : 0.1186
+Best RECALL@50  : 0.1848
+Best NDCG@30 : 0.3564
+Best NDCG@50: 0.3718
+
+TGSRec
+R1
+batch size: 600
+learning rate: 0.001
+n_degree: 30
+agg_method: attn
+agg_mode prod
+n_head=2
+n_layer 2
+node dim: 32
+time dim: 32
+drop out: 0.3
+reg: 0.3
+neg sample eval: 1000
+n_epoch: 35
+
+validation:
+'recall': array([0.03034301, 0.07058047, 0.11411609]), 'ndcg': array([0.01379335, 0.02312658, 0.03133385]), 'hit_ratio': array([0.03034301, 0.07058047, 0.11411609])
+test:
+'recall': array([0.02083333, 0.0625    , 0.09747024]), 'ndcg': array([0.01106712, 0.02065927, 0.02720401]), 'hit_ratio': array([0.02083333, 0.0625    , 0.09747024])
+
+R2
+batch size: 600
+learning rate: 0.001
+n_degree: 30
+agg_method: attn
+agg_mode prod
+n_head=2
+n_layer 2
+node dim: 32
+time dim: 32
+drop out: 0.3
+reg: 0.3
+neg sample eval: 1000
+n_epoch: 100
+
+validation:  {'precision': array([0.00263852, 0.00222076, 0.00221636]), 'recall': array([0.02638522, 0.06662269, 0.11081794]), 'ndcg': array([0.01297189, 0.02230191, 0.03065909]), 'hit_ratio': array([0.02638522, 0.06662269, 0.11081794]), 'auc': 0.740944591029023, 'mrr': 0.012423101372454368}
+num_interactions:  1344
+test:  {'precision': array([0.00215774, 0.00203373, 0.00209821]), 'recall': array([0.02157738, 0.0610119 , 0.10491071]), 'ndcg': array([0.01136557, 0.02025773, 0.02845417]), 'hit_ratio': array([0.02157738, 0.0610119 , 0.10491071]), 'auc': 0.7236834077380951, 'mrr': 0.011389449082350685}
+
+R3
+batch size: 200
+learning rate: 0.001
+n_degree: 35
+agg_method: lstm
+agg_mode prod
+n_head:2
+n_layer:2
+node dim: 32
+time dim: 32
+drop out: 0.3
+reg: 0.2
+neg sample eval: 2000
+n_epoch: 50
+
+validation:  {'precision': array([0.00455145, 0.00408971, 0.00354881]), 'recall': array([0.04551451, 0.12269129, 0.17744063]), 'ndcg': array([0.02159235, 0.03925659, 0.04952609]), 'hit_ratio': array([0.04551451, 0.12269129, 0.17744063]), 'auc': 0.8014802110817965, 'mrr': 0.01993482155994796}
+num_interactions:  1344
+test:  {'precision': array([0.00372024, 0.00329861, 0.00331845]), 'recall': array([0.03720238, 0.09895833, 0.16592262]), 'ndcg': array([0.01768068, 0.03174689, 0.04434424]), 'hit_ratio': array([0.03720238, 0.09895833, 0.16592262]), 'auc': 0.7941019345238081, 'mrr': 0.016798090098124295}
+time freq:  tensor([ 0.8232,  0.8729,  0.1264,  0.0947,  0.0087, -0.0783, -0.0659, -0.1709,
+
+R4
+batch size: 600
+learning rate: 0.0015
+n_degree: 35
+agg_method: lstm
+agg_mode map
+n_head:2
+n_layer:2
+node dim: 12
+time dim: 32
+drop out: 0.3
+reg: 0.2
+neg sample eval: 1000
+n_epoch: 50
+
+validation:  {'precision': array([0.00323219, 0.00272647, 0.00269129]), 'recall': array([0.0323219 , 0.0817942 , 0.13456464]), 'ndcg': array([0.01530131, 0.02663169, 0.03654928]), 'hit_ratio': array([0.0323219 , 0.0817942 , 0.13456464]), 'auc': 0.7756781002638524, 'mrr': 0.014069687970447518}
+num_interactions:  1344
+test:  {'precision': array([0.0030506 , 0.00248016, 0.00217262]), 'recall': array([0.03050595, 0.07440476, 0.10863095]), 'ndcg': array([0.01527694, 0.02541006, 0.03183215]), 'hit_ratio': array([0.03050595, 0.07440476, 0.10863095]), 'auc': 0.7628370535714294, 'mrr': 0.013851428912806416}
+
+
+R5
+batch size: 600
+learning rate: 0.002
+n_degree: 50
+agg_method: lstm
+agg_mode prod
+n_head:2
+n_layer:2
+node dim: 16
+time dim: 32
+drop out: 0.3
+reg: 0.3
+neg sample eval: 1000
+n_epoch: 50
+
+validation:  {'precision': array([0.00395778, 0.00343008, 0.00316623]), 'recall': array([0.03957784, 0.10290237, 0.15831135]), 'ndcg': array([0.01999917, 0.03477216, 0.04518798]), 'hit_ratio': array([0.03957784, 0.10290237, 0.15831135]), 'auc': 0.7896101583113465, 'mrr': 0.019159524271488867}
+
+ASReP
+R1
+learning rate: 0.001
+hidden units: 128
+maxlen: 100
+dropout rate: 0.7
+num blocks: 2
+l2_embedding: 0.0
+num heads: 4
+eval negative sample: 100
+reversed: 1
+reversed generate number: 20
+reversed_gen_num: 20
+M: 20
+epochs: 50
+'precision': array([0.0349014 , 0.01866327, 0.01418057]), 'recall': array([0.349014  , 0.55989805, 0.70902831]), 'ndcg': array([0.22417461, 0.27364961, 0.30157134]), 'hit_ratio': array([0.349014  , 0.55989805, 0.70902831]), 'auc': 0.6763681080355667, 'mrr': 0.20554623305099676
+
+R2
+learning rate: 0.001
+hidden units: 128
+maxlen: 100
+dropout rate: 0.6
+num blocks: 2
+l2_embedding: 0.0
+num heads: 4
+eval negative sample: 200
+reversed: 1
+reversed generate number: 20
+reversed_gen_num: 20
+M: 20
+epochs: 50
+
+'precision': array([0.02646335, 0.01388752, 0.01043152]), 'recall': array([0.26463355, 0.41662568, 0.52157582]), 'ndcg': array([0.16635662, 0.20195806, 0.22165807]), 'hit_ratio': array([0.26463355, 0.41662568, 0.52157582]), 'auc': 0.6782247462326295, 'mrr': 0.15204173194234244
+
+R3
+
+learning rate: 0.0015
+hidden units: 128
+maxlen: 100
+dropout rate: 0.6
+num blocks: 2
+l2_embedding: 0.0
+num heads: 4
+eval negative sample: 200
+reversed: 1
+reversed generate number: 20
+reversed_gen_num: 20
+M: 20
+epochs: 70
+
+{'precision': array([0.02739346, 0.01432724, 0.01069892]), 'recall': array([0.27393462, 0.42981711, 0.53494612]), 'ndcg': array([0.1702093 , 0.20688063, 0.2265725 ]), 'hit_ratio': array([0.27393462, 0.42981711, 0.53494612]), 'auc': 0.6884902517551433, 'mrr': 0.15448286642904752}
+
+R4
+learning rate: 0.001
+hidden units: 128
+maxlen: 200
+dropout rate: 0.6
+num blocks: 3
+l2_embedding: 0.001
+num heads: 4
+eval negative sample: 200
+reversed: 1
+reversed generate number: 30
+M: 20
+epochs: 70
+
+{'precision': array([0.02909717, 0.01522157, 0.01113804]), 'recall': array([0.29097169, 0.45664714, 0.55690203]), 'ndcg': array([0.17567497, 0.21468873, 0.2334733 ]), 'hit_ratio': array([0.29097169, 0.45664714, 0.55690203]), 'auc': 0.7042545722845899, 'mrr': 0.1567369796429884}
+
+R5
+
+
