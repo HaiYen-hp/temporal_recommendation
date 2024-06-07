@@ -1,0 +1,25 @@
+2024-03-28 07:55:56,577 - root - INFO - Namespace(data='ml-100k', bs=600, prefix='ml100k_bce', n_degree=50, n_head=2, n_epoch=50, n_layer=2, lr=0.002, drop_out=0.3, reg=0.3, gpu=0, node_dim=16, time_dim=32, agg_method='lstm', attn_mode='prod', time='time', uniform=True, new_node=False, samplerate=1.0, popnegsample=False, timepopnegsample=False, negsampleeval=1000, disencomponents=None)
+2024-03-28 07:55:57,286 - model - INFO - Aggregation uses LSTM model
+2024-03-28 07:55:57,288 - model - INFO - Using time encoding
+2024-03-28 07:56:07,501 - root - INFO - num of training instances: 80003
+2024-03-28 07:56:07,501 - root - INFO - num of batches per epoch: 134
+2024-03-28 07:56:07,504 - root - INFO - start 0 epoch
+2024-03-28 08:03:33,999 - root - INFO - start 1 epoch
+2024-03-28 08:11:01,770 - root - INFO - start 2 epoch
+2024-03-28 08:18:31,342 - root - INFO - start 3 epoch
+2024-03-28 08:25:49,944 - root - INFO - start 4 epoch
+2024-03-28 08:33:06,425 - root - INFO - start 5 epoch
+2024-03-28 08:40:21,493 - root - INFO - start 6 epoch
+2024-03-28 08:47:36,706 - root - INFO - start 7 epoch
+2024-03-28 08:55:19,690 - root - INFO - start 8 epoch
+2024-03-28 09:03:06,666 - root - INFO - start 9 epoch
+2024-03-28 09:11:15,148 - root - INFO - start 10 epoch
+2024-03-28 09:19:13,249 - root - INFO - start 11 epoch
+2024-03-28 09:26:30,016 - root - INFO - start 12 epoch
+2024-03-28 09:34:59,741 - root - INFO - start 13 epoch
+2024-03-28 09:44:08,034 - root - INFO - start 14 epoch
+2024-03-28 09:51:38,346 - root - INFO - start 15 epoch
+2024-03-28 10:02:30,649 - root - INFO - start 16 epoch
+2024-03-28 10:17:25,324 - root - INFO - start 17 epoch
+2024-03-28 10:32:10,644 - root - INFO - start 18 epoch
+2024-03-28 10:46:06,110 - root - INFO - start 19 epoch

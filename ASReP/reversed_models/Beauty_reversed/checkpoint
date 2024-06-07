@@ -1,0 +1,2 @@
+model_checkpoint_path: "lr_0.0012_maxlen_100_hsize_128_nblocks_3_drate_0.7_l2_0.0_nheads_4_gen_num_5.ckpt"
+all_model_checkpoint_paths: "lr_0.0012_maxlen_100_hsize_128_nblocks_3_drate_0.7_l2_0.0_nheads_4_gen_num_5.ckpt"

@@ -1,0 +1,53 @@
+R1
+embedding_size = 32
+batch_size = 256
+learning_rate = 0.001
+patience = 10
+
+sequence_length = 5
+width = 128
+depth = 4
+dropout_rate = 0.1
+
+HR@30   : 0.6882
+HR@50   : 0.8095
+Recall@30  : 0.1088
+Recall@50  : 0.1803
+NDCG@30 : 0.2977
+NDCG@50: 0.3206
+
+R2
+embedding_size = 64
+batch_size = 300
+learning_rate = 0.0015
+patience = 10
+
+sequence_length = 10
+width = 128
+depth = 5
+dropout_rate = 0.12
+
+HR@30   : 0.6697
+HR@50   : 0.7841
+Recall@30  : 0.1027
+Recall@50  : 0.166
+NDCG@30 : 0.2734
+NDCG@50: 0.2948
+
+R3
+embedding_size = 64
+batch_size = 500
+learning_rate = 0.0017
+patience = 10
+n_epoch = 200
+sequence_length = 5
+width = 256
+depth = 7
+dropout_rate = 0.15
+
+Best HR@30  : 0.7702
+Best HR@50   : 0.8464
+Best RECALL@30  : 0.1192
+Best RECALL@50  : 0.183
+Best NDCG@30 : 0.3595
+Best NDCG@50: 0.3738

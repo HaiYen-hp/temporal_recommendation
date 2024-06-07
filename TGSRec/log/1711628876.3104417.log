@@ -1,0 +1,36 @@
+2024-03-28 12:27:56,310 - root - INFO - Namespace(data='ml-100k', bs=600, prefix='ml100k_bce', n_degree=50, n_head=2, n_epoch=50, n_layer=2, lr=0.002, drop_out=0.3, reg=0.3, gpu=0, node_dim=16, time_dim=32, agg_method='lstm', attn_mode='prod', time='time', uniform=True, new_node=False, samplerate=1.0, popnegsample=False, timepopnegsample=False, negsampleeval=1000, disencomponents=None)
+2024-03-28 12:27:57,961 - model - INFO - Aggregation uses LSTM model
+2024-03-28 12:27:57,964 - model - INFO - Using time encoding
+2024-03-28 12:28:10,700 - root - INFO - num of training instances: 80003
+2024-03-28 12:28:10,703 - root - INFO - num of batches per epoch: 134
+2024-03-28 12:28:10,712 - root - INFO - start 0 epoch
+2024-03-28 12:43:07,768 - root - INFO - start 1 epoch
+2024-03-28 12:58:05,624 - root - INFO - start 2 epoch
+2024-03-28 13:11:27,480 - root - INFO - start 3 epoch
+2024-03-28 13:18:35,339 - root - INFO - start 4 epoch
+2024-03-28 13:26:35,172 - root - INFO - start 5 epoch
+2024-03-28 13:34:46,743 - root - INFO - start 6 epoch
+2024-03-28 13:43:00,265 - root - INFO - start 7 epoch
+2024-03-28 13:51:12,866 - root - INFO - start 8 epoch
+2024-03-28 13:59:20,704 - root - INFO - start 9 epoch
+2024-03-28 14:06:28,033 - root - INFO - start 10 epoch
+2024-03-28 14:13:27,073 - root - INFO - start 11 epoch
+2024-03-28 14:20:24,499 - root - INFO - start 12 epoch
+2024-03-28 14:27:26,607 - root - INFO - start 13 epoch
+2024-03-28 14:34:29,945 - root - INFO - start 14 epoch
+2024-03-28 14:41:33,938 - root - INFO - start 15 epoch
+2024-03-28 14:48:35,765 - root - INFO - start 16 epoch
+2024-03-28 14:55:44,939 - root - INFO - start 17 epoch
+2024-03-28 15:02:45,626 - root - INFO - start 18 epoch
+2024-03-28 15:11:54,339 - root - INFO - start 19 epoch
+2024-03-28 15:21:59,905 - root - INFO - start 20 epoch
+2024-03-28 15:29:21,275 - root - INFO - start 21 epoch
+2024-03-28 15:36:20,364 - root - INFO - start 22 epoch
+2024-03-28 15:43:17,697 - root - INFO - start 23 epoch
+2024-03-28 15:50:23,003 - root - INFO - start 24 epoch
+2024-03-28 15:57:24,483 - root - INFO - start 25 epoch
+2024-03-28 16:04:27,090 - root - INFO - start 26 epoch
+2024-03-28 16:11:29,794 - root - INFO - start 27 epoch
+2024-03-28 16:18:32,912 - root - INFO - start 28 epoch
+2024-03-28 16:27:54,516 - root - INFO - start 29 epoch
+2024-03-28 16:42:22,758 - root - INFO - start 30 epoch
