@@ -303,6 +303,11 @@ def evalute_seq(dataset, all_predictions_results, all_item_idx, all_u, args):
     
     [train, valid, test, original_train, usernum, itemnum] = copy.deepcopy(dataset)
 
+    if 'aug' in args.dataset or 'itemco' in args.dataset or args.aug_traindata > 0:
+        real_train = original_train
+    else:
+        real_train = train
+
     for ind in range(len(all_predictions_results)):
         test_item_idx = all_item_idx[ind]
         unk_predictions = all_predictions_results[ind][test_item_idx]
@@ -314,11 +319,6 @@ def evalute_seq(dataset, all_predictions_results, all_item_idx, all_u, args):
         test_indices.append(0)
         test_allitems.append(test_item_idx[0])
         scale_pred_list.append(scale_pred)
-
-        if 'aug' in args.dataset or 'itemco' in args.dataset or args.aug_traindata > 0:
-            real_train = original_train
-        else:
-            real_train = train
 
         sorted_ind = list((-1*np.array(unk_predictions)).argsort())
         if len(real_train[all_u[ind]]) <= 3:
