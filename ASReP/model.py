@@ -86,22 +86,22 @@ class Model():
         self.test_logits = self.test_logits[:, -1, :]
 
         # prediction layer
-        self.pos_logits = tf.reduce_sum(pos_emb * seq_emb, -1)
-        self.neg_logits = tf.reduce_sum(neg_emb * seq_emb, -1)
+        self.pos_logits = tf.compat.v1.reduce_sum(pos_emb * seq_emb, -1)
+        self.neg_logits = tf.compat.v1.reduce_sum(neg_emb * seq_emb, -1)
 
         # ignore padding items (0)
         istarget = tf.reshape(tf.cast(tf.not_equal(pos, 0), dtype=tf.float32), [tf.shape(self.input_seq)[0] * args.maxlen])
-        self.loss = tf.reduce_sum(
+        self.loss = tf.compat.v1.reduce_sum(
             - tf.math.log(tf.sigmoid(self.pos_logits) + 1e-24) * istarget -
             tf.math.log(1 - tf.sigmoid(self.neg_logits) + 1e-24) * istarget
-        ) / tf.reduce_sum(istarget)
+        ).numpy() / tf.compat.v1.reduce_sum(istarget).numpy()
         reg_losses = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.REGULARIZATION_LOSSES)
         self.loss += sum(reg_losses)
 
         tf.summary.scalar('loss', self.loss)
-        self.auc = tf.reduce_sum(
+        self.auc = tf.compat.v1.reduce_sum(
             ((tf.sign(self.pos_logits - self.neg_logits) + 1) / 2) * istarget
-        ) / tf.reduce_sum(istarget)
+        ) / tf.compat.v1.reduce_sum(istarget)
 
         if reuse is None:
             tf.summary.scalar('auc', self.auc)

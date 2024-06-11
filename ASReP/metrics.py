@@ -42,7 +42,7 @@ def mean_average_precision(rs,cut):
 
 def dcg_at_k(r, k, method=1):
     """Score is discounted cumulative gain (dcg)
-    Relevance is positive real values.  Can use binary
+    Relevance is positive real values. Can use binary
     as the previous methods.
     Returns:
         Discounted cumulative gain
