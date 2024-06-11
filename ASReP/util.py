@@ -9,7 +9,7 @@ import os
 from collections import defaultdict
 
 
-from metrics import *
+from metrics import precision_at_k, recall, ndcg_at_k, hit_at_k, auc, mrr
 from sklearn.preprocessing import MinMaxScaler
 from collections import defaultdict
 from tqdm import tqdm
@@ -96,12 +96,13 @@ def data_load(data_name, args):
         original_train, _, _ = load_file_and_sort(original_train_file)
         aug_data_signature = './aug_data/{}/lr_{}_maxlen_{}_hsize_{}_nblocks_{}_drate_{}_l2_{}_nheads_{}_gen_num_'.format(args.dataset, args.lr, args.maxlen, args.hidden_units, args.num_blocks, args.dropout_rate, args.l2_emb, args.num_heads)
         gen_num_max = 20
-        if os.path.exists(aug_data_signature + str(gen_num_max) + '_M_20.txt'):
-            augdata = augdata_load(aug_data_signature + str(gen_num_max) + '_M_20.txt')
-            print('load ', aug_data_signature + str(gen_num_max) + '_M_20.txt')
+        M_20_filename='_M_20.txt'
+        if os.path.exists(aug_data_signature + str(gen_num_max) + M_20_filename):
+            augdata = augdata_load(aug_data_signature + str(gen_num_max) + M_20_filename)
+            print('load ', aug_data_signature + str(gen_num_max) + M_20_filename)
         else:
             gen_num_max = 10
-            augdata = augdata_load(aug_data_signature + '10_M_20.txt')
+            augdata = augdata_load(aug_data_signature + '10'+M_20_filename)
 
     if args.aug_traindata > 0:
         user_train, train_usernum, train_itemnum = load_file_and_sort(train_file, reverse=reverseornot, augdata=augdata, aug_num=args.aug_traindata, M=args.M)
@@ -123,28 +124,35 @@ def data_augment(model, dataset, args, sess, gen_num):
     all_users = list(train.keys())
 
     cumulative_preds = defaultdict(list)
+
+    augment_users_data = {u_ind: {'u_data':train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, []), 'u':u} \
+                           for u_ind, u in enumerate(all_users) if len(train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, [])) != 0 \
+                              or len(train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, [])) < args.M}
     for num_ind in range(gen_num):
         batch_seq = []
         batch_u = []
         batch_item_idx = []
 
-        for u_ind, u in enumerate(all_users):
-            u_data = train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, [])
+        for u_ind, u_data in augment_users_data.items():
+            # u_data = train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, [])
 
-            if len(u_data) == 0 or len(u_data) >= args.M: continue
+            # if len(u_data) == 0 or len(u_data) >= args.M: continue
 
             seq = np.zeros([args.maxlen], dtype=np.int32)
-            idx = args.maxlen - 1
-            for i in reversed(u_data):
-                if idx == -1: break
-                seq[idx] = i
-                idx -= 1
-            rated = set(u_data)
+            # idx = args.maxlen - 1
+            # for i in reversed(u_data):
+            #     if idx == -1: break
+            #     seq[idx] = i
+            #     idx -= 1
+            idx = args.maxlen
+            for i, _idx in zip(u_data['u_data'], range(0,idx)):
+                seq[_idx] = i
+            rated = set(u_data['u_data'])
             item_idx = list(set([i for i in range(itemnum)]) - rated)
 
             batch_seq.append(seq)
             batch_item_idx.append(item_idx)
-            batch_u.append(u)
+            batch_u.append(u_data['u'])
 
             if (u_ind + 1) % int(args.batch_size / 16) == 0 or u_ind + 1 == len(all_users):
                 predictions = model.predict(sess, batch_u, batch_seq)

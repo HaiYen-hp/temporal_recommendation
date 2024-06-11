@@ -1,5 +1,5 @@
-from modules import *
-
+from modules import embedding, multihead_attention, normalize, feedforward
+import tensorflow as tf
 
 class Model():
     def __init__(self, usernum, itemnum, args, reuse=None):

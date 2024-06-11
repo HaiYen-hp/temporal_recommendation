@@ -101,4 +101,4 @@ def mrr(r):
     if np.sum(r) == 0.:
         return 0.
     else:
-        return np.reciprocal(np.where(r==1)[0]+1, dtype=np.float64)[0]
+        return np.reciprocal(np.nonzero(r==1)[0]+1, dtype=np.float64)[0]
