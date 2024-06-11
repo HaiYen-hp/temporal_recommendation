@@ -76,10 +76,11 @@ if __name__ == '__main__':
         os.makedirs('./aug_data/'+args.dataset)
 
     saver = tf.compat.v1.train.Saver()
+    sub_reversed_folder = '_reversed'
     if args.reversed_pretrain == -1:
         sess.run(tf.compat.v1.global_variables_initializer())
     else:
-        saver.restore(sess, '../ASReP/reversed_models/'+args.dataset+'_reversed/'+model_signature+'.ckpt')
+        saver.restore(sess, '../ASReP/reversed_models/'+args.dataset+sub_reversed_folder+model_signature+'.ckpt')
         print('pretrain model loaded')
 
     T = 0.0
@@ -134,15 +135,15 @@ if __name__ == '__main__':
                     
                     del all_predictions_results, all_item_idx, all_u, eval_data, rankeditems_list, test_indices, scale_pred_list, test_allitems, seq_dicts, all_predictions_results_output
 
-                    print('epoch: '+ str(epoch)+' validationall: '+str(t_valid) + '\nepoch: '+str(epoch)+' testall: ' + str(t_test))
-                    print('epoch: '+ str(epoch)+' validationshort: '+str(t_valid_short_seq) + '\nepoch: '+str(epoch)+' testshort: ' + str(t_test_short_seq))
-                    print('epoch: '+ str(epoch)+' validationshort7: '+str(t_valid_short7_seq) + '\nepoch: '+str(epoch)+' testshort7: ' + str(t_test_short7_seq))
-                    print('epoch: '+ str(epoch)+' validationshort37: '+str(t_valid_short37_seq) + '\nepoch: '+str(epoch)+' testshort37: ' + str(t_test_short37_seq))
-                    print('epoch: '+ str(epoch)+' validationmedium3: '+str(t_valid_medium3_seq) + '\nepoch: '+str(epoch)+' testmedium3: ' + str(t_test_medium3_seq))
-                    print('epoch: '+ str(epoch)+' validationmedium7: '+str(t_valid_medium7_seq) + '\nepoch: '+str(epoch)+' testmedium7: ' + str(t_test_medium7_seq))
-                    print('epoch: '+ str(epoch)+' validationlong: '+str(t_valid_long_seq) + '\nepoch: '+str(epoch)+' testlong: ' + str(t_test_long_seq))
+                    print(f'epoch: {str(epoch)} validationall: {str(t_valid)} \nepoch: {str(epoch)} testall: {str(t_test)}')
+                    print(f'epoch: {str(epoch)} validationshort: {str(t_valid_short_seq)} \nepoch: {str(epoch)} testshort: {str(t_test_short_seq)}')
+                    print(f'epoch: {str(epoch)} validationshort7: {str(t_valid_short7_seq)} \nepoch: {str(epoch)} testshort7: {str(t_test_short7_seq)}')
+                    print(f'epoch: {str(epoch)} validationshort37: {str(t_valid_short37_seq)} \nepoch: {str(epoch)} testshort37: {str(t_test_short37_seq)}')
+                    print(f'epoch: {str(epoch)} validationmedium3: {str(t_valid_medium3_seq)} \nepoch: {str(epoch)} testmedium3: {str(t_test_medium3_seq)}')
+                    print(f'epoch: {str(epoch)} validationmedium7: {str(t_valid_medium7_seq)} \nepoch: {str(epoch)} testmedium7: {str(t_test_medium7_seq)}')
+                    print(f'epoch: {str(epoch)} validationlong: {str(t_valid_long_seq)} \nepoch: {str(epoch)} testlong: {str(t_test_long_seq)}')
                 else:
-                    print('epoch: '+str(epoch)+' test: ' + str(t_test))
+                    print(f'epoch: {str(epoch)} test: {str(t_test)}')
 
                 t0 = time.time()
     except Exception as e:
@@ -160,7 +161,8 @@ if __name__ == '__main__':
                 for ind, aug_i in enumerate(aug_ilist):
                     f.write(str(u-1) + '\t' + str(aug_i - 1) + '\t' + str(-(ind+1)) + '\n')
         if args.reversed_gen_number > 0:
-            if not os.path.exists('./reversed_models/'+args.dataset+'_reversed/'):
-                os.makedirs('./reversed_models/'+args.dataset+'_reversed/')
-            saver.save(sess, './reversed_models/'+args.dataset+'_reversed/'+model_signature+'.ckpt')
+            parent_path_re_model = './reversed_models/'
+            if not os.path.exists(parent_path_re_model+args.dataset+sub_reversed_folder):
+                os.makedirs(parent_path_re_model+args.dataset+sub_reversed_folder)
+            saver.save(sess, parent_path_re_model+args.dataset+sub_reversed_folder+model_signature+'.ckpt')
     sampler.close()
