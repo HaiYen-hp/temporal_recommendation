@@ -5,10 +5,12 @@ import tensorflow as tf
 from sampler import WarpSampler
 from model import Model
 from tqdm import tqdm
-from util import *
+from util import data_load, predict_eval, evalute_seq, evaluate, data_augment
 import traceback, sys
 import json
 import warnings
+from tqdm import tqdm
+import numpy as np
 
 warnings.filterwarnings("ignore")
 
@@ -87,7 +89,7 @@ if __name__ == '__main__':
         for epoch in range(1, args.num_epochs + 1):
 
             #print(num_batch)
-            for step in range(num_batch):#tqdm(range(num_batch), total=num_batch, ncols=70, leave=False, unit='b'):
+            for step in tqdm(range(num_batch)):#tqdm(range(num_batch), total=num_batch, ncols=70, leave=False, unit='b'):
             #for step in tqdm(range(num_batch), total=num_batch, ncols=70, leave=False, unit='b'):
                 u, seq, pos, neg = sampler.next_batch()
                 auc, loss, _ = sess.run([model.auc, model.loss, model.train_op],
@@ -111,15 +113,27 @@ if __name__ == '__main__':
                 if not os.path.isdir(RANK_RESULTS_DIR):
                     os.makedirs(RANK_RESULTS_DIR)
                 rank_test_file = RANK_RESULTS_DIR + '/' + model_signature + '_predictions.json'
-                t_test, t_test_short_seq, t_test_short7_seq, t_test_short37_seq, t_test_medium3_seq, t_test_medium7_seq, t_test_long_seq, test_rankitems = evaluate(model, dataset, args, sess, "test")
-                #if args.reversed == 0:
-                #    with open(rank_test_file, 'w') as f:
-                #        for eachpred in test_rankitems:
-                #            f.write(json.dumps(eachpred) + '\n')
+                
+                all_predictions_results, all_item_idx, all_u, eval_data = \
+                    predict_eval(model, dataset, args, sess, "test")
+                rankeditems_list, test_indices, scale_pred_list, test_allitems, seq_dicts, all_predictions_results_output = \
+                    evalute_seq(dataset, all_predictions_results, all_item_idx, all_u, args)
+                t_test, t_test_short_seq, t_test_short7_seq, t_test_short37_seq, t_test_medium3_seq, t_test_medium7_seq, t_test_long_seq, test_rankitems = \
+                    evaluate(rankeditems_list, test_indices, scale_pred_list, test_allitems, seq_dicts, all_predictions_results_output, eval_data)
+
+                del all_predictions_results, all_item_idx, all_u, eval_data, rankeditems_list, test_indices, scale_pred_list, test_allitems, seq_dicts, all_predictions_results_output
+
                 if not (args.reversed == 1):
-                    t_valid, t_valid_short_seq, t_valid_short7_seq, t_valid_short37_seq, t_valid_medium3_seq, t_valid_medium7_seq, t_valid_long_seq, valid_rankitems = evaluate(model, dataset, args, sess, "valid")
-                #print('epoch:%d, time: %f(s), valid NDCG@10: %.4f HR@10: %.4f NDCG@1: %.4f HR@1: %.4f NDCG@5: %.4f HR@5: %.4f test NDCG@10: %.4f HR@10: %.4f NDCG@1: %.4f HR@1: %.4f NDCG@5: %.4f HR@5: %.4f' % (
-                #epoch, T, t_valid[0], t_valid[1], t_valid[2], t_valid[3], t_valid[4], t_valid[5], t_test[0], t_test[1], t_test[2], t_test[3], t_test[4], t_test[5]))
+                    all_predictions_results, all_item_idx, all_u, eval_data = \
+                        predict_eval(model, dataset, args, sess, "valid")
+                    rankeditems_list, test_indices, scale_pred_list, test_allitems, seq_dicts, all_predictions_results_output = \
+                        evalute_seq(dataset, all_predictions_results, all_item_idx, all_u, args)
+                    t_valid, t_valid_short_seq, t_valid_short7_seq, t_valid_short37_seq, t_valid_medium3_seq, t_valid_medium7_seq, t_valid_long_seq, valid_rankitems = \
+                        evaluate(rankeditems_list, test_indices, scale_pred_list, test_allitems, seq_dicts,\
+                                 all_predictions_results_output, eval_data)
+                    
+                    del all_predictions_results, all_item_idx, all_u, eval_data, rankeditems_list, test_indices, scale_pred_list, test_allitems, seq_dicts, all_predictions_results_output
+
                     print('epoch: '+ str(epoch)+' validationall: '+str(t_valid) + '\nepoch: '+str(epoch)+' testall: ' + str(t_test))
                     print('epoch: '+ str(epoch)+' validationshort: '+str(t_valid_short_seq) + '\nepoch: '+str(epoch)+' testshort: ' + str(t_test_short_seq))
                     print('epoch: '+ str(epoch)+' validationshort7: '+str(t_valid_short7_seq) + '\nepoch: '+str(epoch)+' testshort7: ' + str(t_test_short7_seq))

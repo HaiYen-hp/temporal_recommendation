@@ -31,13 +31,13 @@ def average_precision(r,cut):
     return np.sum(out)/float(min(cut, np.sum(r)))
 
 
-def mean_average_precision(rs):
+def mean_average_precision(rs,cut):
     """Score is mean average precision
     Relevance is binary (nonzero is relevant).
     Returns:
         Mean average precision
     """
-    return np.mean([average_precision(r) for r in rs])
+    return np.mean([average_precision(r,cut) for r in rs])
 
 
 def dcg_at_k(r, k, method=1):
