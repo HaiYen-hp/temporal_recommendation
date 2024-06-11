@@ -115,25 +115,25 @@ if __name__ == '__main__':
                     os.makedirs(RANK_RESULTS_DIR)
                 rank_test_file = RANK_RESULTS_DIR + '/' + model_signature + '_predictions.json'
                 
-                all_predictions_results, all_item_idx, all_u, eval_data = \
+                all_predictions_results, all_item_idx, all_u, eval_data, real_train = \
                     predict_eval(model, dataset, args, sess, "test")
                 rankeditems_list, test_indices, scale_pred_list, test_allitems, seq_dicts, all_predictions_results_output = \
-                    evalute_seq(dataset, all_predictions_results, all_item_idx, all_u, args)
+                    evalute_seq(all_predictions_results, all_item_idx, all_u, real_train)
                 t_test, t_test_short_seq, t_test_short7_seq, t_test_short37_seq, t_test_medium3_seq, t_test_medium7_seq, t_test_long_seq, test_rankitems = \
                     evaluate(rankeditems_list, test_indices, scale_pred_list, test_allitems, seq_dicts, all_predictions_results_output, eval_data)
 
-                del all_predictions_results, all_item_idx, all_u, eval_data, rankeditems_list, test_indices, scale_pred_list, test_allitems, seq_dicts, all_predictions_results_output
+                del all_predictions_results, all_item_idx, all_u, eval_data, real_train, rankeditems_list, test_indices, scale_pred_list, test_allitems, seq_dicts, all_predictions_results_output
 
                 if not (args.reversed == 1):
-                    all_predictions_results, all_item_idx, all_u, eval_data = \
+                    all_predictions_results, all_item_idx, all_u, eval_data, real_train = \
                         predict_eval(model, dataset, args, sess, "valid")
                     rankeditems_list, test_indices, scale_pred_list, test_allitems, seq_dicts, all_predictions_results_output = \
-                        evalute_seq(dataset, all_predictions_results, all_item_idx, all_u, args)
+                        evalute_seq(all_predictions_results, all_item_idx, all_u, real_train)
                     t_valid, t_valid_short_seq, t_valid_short7_seq, t_valid_short37_seq, t_valid_medium3_seq, t_valid_medium7_seq, t_valid_long_seq, valid_rankitems = \
                         evaluate(rankeditems_list, test_indices, scale_pred_list, test_allitems, seq_dicts,\
                                  all_predictions_results_output, eval_data)
                     
-                    del all_predictions_results, all_item_idx, all_u, eval_data, rankeditems_list, test_indices, scale_pred_list, test_allitems, seq_dicts, all_predictions_results_output
+                    del all_predictions_results, all_item_idx, all_u, eval_data, real_train, rankeditems_list, test_indices, scale_pred_list, test_allitems, seq_dicts, all_predictions_results_output
 
                     print(f'epoch: {str(epoch)} validationall: {str(t_valid)} \nepoch: {str(epoch)} testall: {str(t_test)}')
                     print(f'epoch: {str(epoch)} validationshort: {str(t_valid_short_seq)} \nepoch: {str(epoch)} testshort: {str(t_test_short_seq)}')

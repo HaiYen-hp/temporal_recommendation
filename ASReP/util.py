@@ -280,9 +280,14 @@ def predict_eval(model, dataset, args, sess, testorvalid):
             batch_item_idx = []
             batch_u = []
 
-    return all_predictions_results, all_item_idx, all_u, eval_data
+    if 'aug' in args.dataset or 'itemco' in args.dataset or args.aug_traindata > 0:
+        real_train = original_train
+    else:
+        real_train = train
 
-def evalute_seq(dataset, all_predictions_results, all_item_idx, all_u, args):
+    return all_predictions_results, all_item_idx, all_u, eval_data, real_train
+
+def evalute_seq(all_predictions_results, all_item_idx, all_u, real_train):
 
     rankeditems_list = []
     test_indices = []
@@ -300,13 +305,6 @@ def evalute_seq(dataset, all_predictions_results, all_item_idx, all_u, args):
     rankeditemid_scores = []
 
     all_predictions_results_output = []
-    
-    [train, valid, test, original_train, usernum, itemnum] = copy.deepcopy(dataset)
-
-    if 'aug' in args.dataset or 'itemco' in args.dataset or args.aug_traindata > 0:
-        real_train = original_train
-    else:
-        real_train = train
 
     for ind in range(len(all_predictions_results)):
         test_item_idx = all_item_idx[ind]
