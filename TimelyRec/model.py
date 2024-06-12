@@ -188,6 +188,33 @@ class TemporalPositionEncoding(Layer):
     def compute_output_shape(self, inshape):
         return inshape[0]
 
+def create_sequence(sequence_length : int):
+    input = []
+    for i in range(sequence_length):
+        input.append(Input(shape=[1], dtype=tf.int32))
+    return input
+
+def create_prev_embedding(embedding:list, prevEmbeddings:list, recentInput:list, idx_seq:int, ratio:float, num_of_date:int):
+    for j in range(1, max(int(num_of_date * ratio + 0.5), 1) + 1):
+            surr = embedding(SurroundingSlots(window_length=j, max_range=num_of_date)(recentInput[idx_seq]))
+            prevEmbeddings[idx_seq].append(meanLayer()(surr))
+
+def create_embedding(embedding:list, dateInput, ratio:float, num_of_date:int):
+    for i in range(1, max(int(num_of_date * ratio + 0.5), 1) + 1):
+        surr = embedding(SurroundingSlots(window_length=i, max_range=num_of_date)(dateInput))
+        embedding.append(meanLayer()(surr))
+
+def concat_embedding(embedding:list, prevEmbeddings:list, sequence_length : int, ratio:float, num_of_date:int):
+    if int(num_of_date * ratio + 0.5) <= 1:
+        embedding = embedding[0]
+        for i in range(sequence_length):
+            prevEmbeddings[i] = prevEmbeddings[i][0]
+    else:    
+        embedding = concatenate(embedding, axis=1) 
+        for i in range(sequence_length):
+            prevEmbeddings[i] = concatenate(prevEmbeddings[i], axis=1)
+    
+    return embedding, prevEmbeddings
 
 def TimelyRec(input_shape, num_users, num_items, embedding_size, sequence_length, width, depth, dropout=None):
     userInput = Input(shape=[1], dtype=tf.int32)
@@ -198,24 +225,12 @@ def TimelyRec(input_shape, num_users, num_items, embedding_size, sequence_length
     hourInput = Input(shape=[1], dtype=tf.int32)
     curTimestampInput = Input(shape=[1], dtype=tf.int32)
 
-    recentMonthInput = []
-    recentDayInput = []
-    recentDateInput = []
-    recentHourInput = []
-    recentTimestampInput = []
-    recentItemidInput = []
-    for i in range(sequence_length):
-        recentMonthInput.append(Input(shape=[1], dtype=tf.int32))
-    for i in range(sequence_length):
-        recentDayInput.append(Input(shape=[1], dtype=tf.int32))
-    for i in range(sequence_length):
-        recentDateInput.append(Input(shape=[1], dtype=tf.int32))
-    for i in range(sequence_length):
-        recentHourInput.append(Input(shape=[1], dtype=tf.int32))
-    for i in range(sequence_length):
-        recentTimestampInput.append(Input(shape=[1], dtype=tf.int32))
-    for i in range(sequence_length):
-        recentItemidInput.append(Input(shape=[1], dtype=tf.int32))
+    recentMonthInput = create_sequence(sequence_length)
+    recentDayInput = create_sequence(sequence_length)
+    recentDateInput = create_sequence(sequence_length)
+    recentHourInput = create_sequence(sequence_length)
+    recentTimestampInput = create_sequence(sequence_length)
+    recentItemidInput = create_sequence(sequence_length)
 
     userEmbedding = Embedding(num_users+1, embedding_size)(userInput)
     itemEmbeddingSet = Embedding(num_items+1, embedding_size)
@@ -249,78 +264,51 @@ def TimelyRec(input_shape, num_users, num_items, embedding_size, sequence_length
     prevHourEmbeddings = []
 
     ratio = 0.2
+
     for i in range(sequence_length):
         prevMonthEmbeddings.append([])
-        for j in range(1, max(int(12 * ratio + 0.5), 1) + 1):
-            monthSurr = monthEmbedding(SurroundingSlots(window_length=j, max_range=12)(recentMonthInput[i]))
-            prevMonthEmbeddings[i].append(meanLayer()(monthSurr))  
+        create_prev_embedding(monthEmbedding, prevMonthEmbeddings, recentMonthInput, i, ratio, num_of_date=12)
 
         prevDayEmbeddings.append([])
-        for j in range(1, max(int(7 * ratio + 0.5), 1) + 1):
-            daySurr = dayEmbedding(SurroundingSlots(window_length=j, max_range=7)(recentDayInput[i]))
-            prevDayEmbeddings[i].append(meanLayer()(daySurr))    
+        create_prev_embedding(dayEmbedding, prevDayEmbeddings, recentDayInput, i, ratio, num_of_date=7) 
 
         prevDateEmbeddings.append([])
-        for j in range(1, max(int(31 * ratio + 0.5), 1) + 1):
-            dateSurr = dateEmbedding(SurroundingSlots(window_length=j, max_range=31)(recentDateInput[i]))
-            prevDateEmbeddings[i].append(meanLayer()(dateSurr))    
+        create_prev_embedding(dateEmbedding, prevDateEmbeddings, recentDateInput, i, ratio, num_of_date=31)
 
         prevHourEmbeddings.append([])
-        for j in range(1, max(int(24 * ratio + 0.5), 1) + 1):
-            hourSurr = hourEmbedding(SurroundingSlots(window_length=j, max_range=24)(recentHourInput[i]))
-            prevHourEmbeddings[i].append(meanLayer()(hourSurr))            
+        create_prev_embedding(hourEmbedding, prevHourEmbeddings, recentHourInput, i, ratio, num_of_date=24)
+        # for j in range(1, max(int(24 * ratio + 0.5), 1) + 1):
+        #     hourSurr = hourEmbedding(SurroundingSlots(window_length=j, max_range=24)(recentHourInput[i]))
+        #     prevHourEmbeddings[i].append(meanLayer()(hourSurr))          
 
-    for i in range(1, max(int(12 * ratio + 0.5), 1) + 1):
-        monthSurr = monthEmbedding(SurroundingSlots(window_length=i, max_range=12)(monthInput))
-        monthEmbeddings.append(meanLayer()(monthSurr))
-        
-    for i in range(1, max(int(7 * ratio + 0.5), 1) + 1):
-        daySurr = dayEmbedding(SurroundingSlots(window_length=i, max_range=7)(dayInput))
-        dayEmbeddings.append(meanLayer()(daySurr))
-        
-    for i in range(1, max(int(31 * ratio + 0.5), 1) + 1):
-        dateSurr = dateEmbedding(SurroundingSlots(window_length=i, max_range=31)(dateInput))
-        dateEmbeddings.append(meanLayer()(dateSurr))
-        
-    for i in range(1, max(int(24 * ratio + 0.5), 1) + 1):
-        hourSurr = hourEmbedding(SurroundingSlots(window_length=i, max_range=24)(hourInput))
-        hourEmbeddings.append(meanLayer()(hourSurr))
+    create_embedding(monthEmbedding, monthInput, ratio, num_of_date=12)
 
-    if int(12 * ratio + 0.5) <= 1:
-        monthEmbeddings = monthEmbeddings[0]
-        for i in range(sequence_length):
-            prevMonthEmbeddings[i] = prevMonthEmbeddings[i][0]
-    else:    
-        monthEmbeddings = concatenate(monthEmbeddings, axis=1) 
-        for i in range(sequence_length):
-            prevMonthEmbeddings[i] = concatenate(prevMonthEmbeddings[i], axis=1)
+    create_embedding(dayEmbedding, dayInput, ratio, num_of_date=7)  
 
-    if int(7 * ratio + 0.5) <= 1:
-        dayEmbeddings = dayEmbeddings[0]
-        for i in range(sequence_length):
-            prevDayEmbeddings[i] = prevDayEmbeddings[i][0]
-    else:
-        dayEmbeddings = concatenate(dayEmbeddings, axis=1)
-        for i in range(sequence_length):
-            prevDayEmbeddings[i] = concatenate(prevDayEmbeddings[i], axis=1)
+    create_embedding(dateEmbedding, dateInput, ratio, num_of_date=31)
+    
+    create_embedding(hourEmbedding, hourInput, ratio, num_of_date=24)
 
-    if int(31 * ratio + 0.5) <= 1:
-        dateEmbeddings = dateEmbeddings[0] 
-        for i in range(sequence_length):
-            prevDateEmbeddings[i] = prevDateEmbeddings[i][0]
-    else:
-        dateEmbeddings = concatenate(dateEmbeddings, axis=1)
-        for i in range(sequence_length):
-            prevDateEmbeddings[i] = concatenate(prevDateEmbeddings[i], axis=1)
+    # for i in range(1, max(int(24 * ratio + 0.5), 1) + 1):
+    #     hourSurr = hourEmbedding(SurroundingSlots(window_length=i, max_range=24)(hourInput))
+    #     hourEmbeddings.append(meanLayer()(hourSurr))
 
-    if int(24 * ratio + 0.5) <= 1:
-        hourEmbeddings = hourEmbeddings[0]
-        for i in range(sequence_length):
-            prevHourEmbeddings[i] = prevHourEmbeddings[i][0]
-    else:
-        hourEmbeddings = concatenate(hourEmbeddings, axis=1) 
-        for i in range(sequence_length):
-            prevHourEmbeddings[i] = concatenate(prevHourEmbeddings[i], axis=1)
+    monthEmbeddings, prevMonthEmbeddings = concat_embedding(monthEmbeddings, prevMonthEmbeddings, sequence_length, ratio, num_of_date=12)
+
+    dayEmbeddings, prevDayEmbeddings = concat_embedding(dayEmbeddings, prevDayEmbeddings, sequence_length, ratio, num_of_date=7)
+
+    dateEmbeddings, prevDateEmbeddings = concat_embedding(dateEmbeddings, prevDateEmbeddings, sequence_length, ratio, num_of_date=31)
+
+    hourEmbeddings, prevHourEmbeddings = concat_embedding(hourEmbeddings, prevHourEmbeddings, sequence_length, ratio, num_of_date=24)
+
+    # if int(24 * ratio + 0.5) <= 1:
+    #     hourEmbeddings = hourEmbeddings[0]
+    #     for i in range(sequence_length):
+    #         prevHourEmbeddings[i] = prevHourEmbeddings[i][0]
+    # else:
+    #     hourEmbeddings = concatenate(hourEmbeddings, axis=1) 
+    #     for i in range(sequence_length):
+    #         prevHourEmbeddings[i] = concatenate(prevHourEmbeddings[i], axis=1)
 
     recentTimestampTEs = PositionalEncoding(output_dim=embedding_size)(recentTimestamps)
     curTimestampTE = PositionalEncoding(output_dim=embedding_size)(curTimestampInput)

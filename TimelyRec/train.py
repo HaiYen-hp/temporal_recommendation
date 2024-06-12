@@ -39,10 +39,10 @@ depth = 6
 dropout_rate = 0.15
 
 
-
-tr_dataset = pd.read_csv("movielens/train.txt",sep=',',names="user_id,item_id,rating,timestamp".split(",")) 
-va_dataset = pd.read_csv("movielens/validation.txt",sep=',',names="user_id,item_id,rating,timestamp".split(","))
-te_dataset = pd.read_csv("movielens/test.txt",sep=',',names="user_id,item_id,rating,timestamp".split(","))
+columns = "user_id,item_id,rating,timestamp"
+tr_dataset = pd.read_csv("movielens/train.txt",sep=',',names=columns.split(",")) 
+va_dataset = pd.read_csv("movielens/validation.txt",sep=',',names=columns.split(","))
+te_dataset = pd.read_csv("movielens/test.txt",sep=',',names=columns.split(","))
 
 userSortedTimestamp = {}
 for uid in tr_dataset.user_id.unique().tolist():

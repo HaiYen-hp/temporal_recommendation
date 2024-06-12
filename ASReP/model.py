@@ -94,7 +94,7 @@ class Model():
         self.loss = tf.compat.v1.reduce_sum(
             - tf.math.log(tf.sigmoid(self.pos_logits) + 1e-24) * istarget -
             tf.math.log(1 - tf.sigmoid(self.neg_logits) + 1e-24) * istarget
-        ).numpy() / tf.compat.v1.reduce_sum(istarget).numpy()
+        ) / tf.compat.v1.reduce_sum(istarget)
         reg_losses = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.REGULARIZATION_LOSSES)
         self.loss += sum(reg_losses)
 
