@@ -106,7 +106,7 @@ def data_load(data_name, args):
             print('load ', aug_data_signature + str(gen_num_max) + M_20_filename)
         else:
             gen_num_max = 10
-            augdata = augdata_load(aug_data_signature + gen_num_max +M_20_filename)
+            augdata = augdata_load(aug_data_signature + str(gen_num_max) + M_20_filename)
 
     if args.aug_traindata > 0:
         user_train, train_usernum, train_itemnum = load_file_and_sort(train_file, reverse=reverseornot, augdata=augdata, aug_num=args.aug_traindata, M=args.M)
@@ -239,7 +239,7 @@ def create_seq(train, valid, itemnum, u_i_list, args, testorvalid):
         if args.evalnegsample >= len(item_candiates):
             item_idx += item_candiates
         else:
-            rng = np.random.default_rng()
+            rng = np.random.default_rng(seed=2e9)
             item_idx += list(rng.choice(item_candiates, size=args.evalnegsample, replace=False))
     return seq, item_idx
 

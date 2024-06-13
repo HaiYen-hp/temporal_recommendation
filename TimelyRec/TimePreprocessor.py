@@ -4,6 +4,11 @@ import warnings
 
 warnings.simplefilter("ignore", category=FutureWarning)
 
+def _mid_equal_timestamp(mid, userSortedTimestamp_ts, timestamp, sequence_length, userSortedTimestamp_iid):
+    for i in range(mid, -1, -1):
+        if userSortedTimestamp_ts[i] != timestamp:
+            return userSortedTimestamp_ts[i+1-sequence_length : i+1], userSortedTimestamp_iid[i+1-sequence_length : i+1]
+
 def findKMostRecentTimestamps(userSortedTimestamp, timestamp, sequence_length):
     length = len(userSortedTimestamp)
     userSortedTimestamp_ts = [0]*sequence_length + userSortedTimestamp.timestamp.tolist()
@@ -16,9 +21,7 @@ def findKMostRecentTimestamps(userSortedTimestamp, timestamp, sequence_length):
         mid = int(max(sequence_length, mid))
         
         if userSortedTimestamp_ts[mid] == timestamp: # mid == timestamp
-            for i in range(mid, -1, -1):
-                if userSortedTimestamp_ts[i] != timestamp:
-                    return userSortedTimestamp_ts[i+1-sequence_length : i+1], userSortedTimestamp_iid[i+1-sequence_length : i+1]
+            return _mid_equal_timestamp(mid, userSortedTimestamp_ts, timestamp, sequence_length, userSortedTimestamp_iid)
         elif mid == length+sequence_length-1: # mid == end
             return userSortedTimestamp_ts[mid-sequence_length : mid], userSortedTimestamp_iid[mid-sequence_length : mid]
         elif userSortedTimestamp_ts[mid] > timestamp and userSortedTimestamp_ts[mid-1] < timestamp: # mid-1 < now < mid
