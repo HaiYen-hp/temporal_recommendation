@@ -85,8 +85,6 @@ model.compile(loss='binary_crossentropy',
 
 best_hr30 = 0
 best_hr50 = 0
-best_recall30 = 0
-best_recall50 = 0
 best_ndcg50 = 0
 best_ndcg30 = 0
 best_hr10_i = 0
@@ -109,7 +107,7 @@ for epoch in range(n_epoch):
     tr_neg_itemtime_dataset = timestamp_processor(tr_neg_itemtime_dataset, userSortedTimestamp, sequence_length)
     tr_neg_dataset = pd.concat([tr_neg_item_dataset, tr_neg_time_dataset, tr_neg_itemtime_dataset])
     
-    tr_posneg_dataset = shuffle(pd.concat([tr_dataset, tr_neg_dataset], join='inner', ignore_index=True))
+    tr_posneg_dataset = shuffle(pd.concat([tr_dataset, tr_neg_dataset], join='inner', ignore_index=True), random_state=2024)
     print ("Training...")
     t1 = time.time()
     # Train
@@ -156,14 +154,12 @@ for epoch in range(n_epoch):
     print ("Evaluating...")
     t2 = time.time()
     # Evaluation
-    HR30, HR50, Recall30, Recall50, NDCG30, NDCG50 = evaluate(model, va_dataset, num_candidates=301, sequence_length=sequence_length)
+    HR30, HR50, NDCG30, NDCG50 = evaluate(model, va_dataset, num_candidates=301, sequence_length=sequence_length)
 
     print ("Test time: " + str(round(time.time() - t2, 1)))
     print ("Val")
     print ("HR@30   : " + str(round(HR30, 4)))
     print ("HR@50   : " + str(round(HR50, 4)))
-    print ("Recall@30  : " + str(round(Recall30, 4)))
-    print ("Recall@50  : " + str(round(Recall50, 4)))
     print ("NDCG@30 : " + str(round(NDCG30, 4)))
     print ("NDCG@50: " + str(round(NDCG50, 4)))
     print ("")
@@ -172,8 +168,6 @@ for epoch in range(n_epoch):
     if HR30 > best_hr30:
         best_hr30 = HR30
         best_hr50 = HR50
-        best_recall30 = Recall30
-        best_recall50 = Recall50
         best_ndcg30 = NDCG30
         best_ndcg50 = NDCG50
         best_hr10_i = epoch
@@ -185,8 +179,6 @@ for epoch in range(n_epoch):
         
     print ("Best HR@30  : " + str(round(best_hr30, 4)))
     print ("Best HR@50   : " + str(round(best_hr50, 4)))
-    print ("Best RECALL@30  : " + str(round(best_recall30, 4)))
-    print ("Best RECALL@50  : " + str(round(best_recall50, 4)))
     print ("Best NDCG@30 : " + str(round(best_ndcg30, 4)))
     print ("Best NDCG@50: " + str(round(best_ndcg50, 4)))
     print ('')

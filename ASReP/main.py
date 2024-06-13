@@ -80,7 +80,7 @@ if __name__ == '__main__':
     if args.reversed_pretrain == -1:
         sess.run(tf.compat.v1.global_variables_initializer())
     else:
-        saver.restore(sess, '../ASReP/reversed_models/'+args.dataset+sub_reversed_folder+model_signature+'.ckpt')
+        saver.restore(sess, './reversed_models/'+args.dataset+'/'+model_signature+'.ckpt')
         print('pretrain model loaded')
 
     T = 0.0
@@ -162,7 +162,7 @@ if __name__ == '__main__':
                     f.write(str(u-1) + '\t' + str(aug_i - 1) + '\t' + str(-(ind+1)) + '\n')
         if args.reversed_gen_number > 0:
             parent_path_re_model = './reversed_models/'
-            if not os.path.exists(parent_path_re_model+args.dataset+sub_reversed_folder):
-                os.makedirs(parent_path_re_model+args.dataset+sub_reversed_folder)
-            saver.save(sess, parent_path_re_model+args.dataset+sub_reversed_folder+model_signature+'.ckpt')
+            if not os.path.exists(parent_path_re_model+args.dataset+'/'):
+                os.makedirs(parent_path_re_model+args.dataset+'/')
+            saver.save(sess, parent_path_re_model+args.dataset+'/'+model_signature+'.ckpt')
     sampler.close()

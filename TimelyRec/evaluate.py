@@ -4,8 +4,6 @@ Ks = [30,50]
 def evaluate(model, va_dataset, num_candidates, sequence_length):
     HR30 = 0
     HR50 = 0
-    Recall30 = 0
-    Recall50 = 0
     NDCG30 = 0
     NDCG50 = 0
     num_users = int(len(va_dataset) / num_candidates)
@@ -52,19 +50,15 @@ def evaluate(model, va_dataset, num_candidates, sequence_length):
             # metric_Ks[f'recall{k}'] = metric_Ks[f'intersect{k}']/len(item_input[:k])        
             if metric_Ks[f'hit{k}']:
                 metric_Ks[f'intersect{k}'] = len(set(item_input[:k]) & set(metric_Ks[f'top{k}'].item_id))
-                metric_Ks[f'recall{k}'] = metric_Ks[f'intersect{k}']/len(item_input[:k])
                 ind = metric_Ks[f'top{k}'].rating.tolist().index(1) + 1
                 metric_Ks[f'ndcg{k}'] = float(1) / math.log(float(ind + 1), 2)
             else:
-                metric_Ks[f'recall{k}'] = 0
                 metric_Ks[f'ndcg{k}'] = 0
             
 
         # print(metric_Ks.keys())
         HR30 += metric_Ks['hit30']
         HR50 += metric_Ks['hit50']
-        Recall30 += metric_Ks['recall30']
-        Recall50 += metric_Ks['recall50']
         NDCG30 += metric_Ks['ndcg30']
         NDCG50 += metric_Ks['ndcg50']
 
@@ -72,9 +66,7 @@ def evaluate(model, va_dataset, num_candidates, sequence_length):
 
     HR30 = float(HR30) / num_users
     HR50 = float(HR50) / num_users
-    Recall30 = Recall30 / num_users
-    Recall50 = Recall50 / num_users
     NDCG30 = NDCG30 / num_users
     NDCG50 = NDCG50 / num_users
 
-    return HR30, HR50, Recall30, Recall50, NDCG30, NDCG50
+    return HR30, HR50, NDCG30, NDCG50

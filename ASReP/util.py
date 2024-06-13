@@ -1,13 +1,12 @@
 import sys
 import copy
 import random
-import multiprocess.pool
+import multiprocessing
 import numpy as np
-import multiprocess
 import time
 import os
 from collections import defaultdict
-
+from tqdm import tqdm
 
 from metrics import precision_at_k, recall, ndcg_at_k, hit_at_k, auc, mrr
 from sklearn.preprocessing import MinMaxScaler
@@ -16,14 +15,16 @@ from tqdm import tqdm
 import copy
 
 Ks = [10, 30, 50]
-cores = multiprocess.cpu_count() // 3
+cores = multiprocessing.cpu_count() // 4
 
 def load_file_and_sort(filename, reverse=False, augdata=None, aug_num=0, M=10):
     data = defaultdict(list)
     max_uind = 0
     max_iind = 0
+    print("Load file and sort")
+
     with open(filename, 'r') as f:
-        for line in f:
+        for i, line in enumerate(tqdm(f)):
             one_interaction = line.rstrip().split("\t")
             uind = int(one_interaction[0]) + 1
             iind = int(one_interaction[1]) + 1
@@ -58,9 +59,12 @@ def load_file_and_sort(filename, reverse=False, augdata=None, aug_num=0, M=10):
 
 
 def augdata_load(aug_filename):
+
+    print("Load augment data")
+
     augdata = defaultdict(list)
     with open(aug_filename, 'r') as f:
-        for line in f:
+        for i, line in enumerate(tqdm(f)):
             one_interaction = line.rstrip().split("\t")
             uind = int(one_interaction[0]) + 1
             iind = int(one_interaction[1]) + 1
@@ -120,6 +124,8 @@ def data_load(data_name, args):
 
 
 def data_augment(model, dataset, args, sess, gen_num):
+
+    print("Data augment")
     [train, valid, test, original_train, usernum, itemnum] = copy.deepcopy(dataset)
     all_users = list(train.keys())
 
@@ -129,21 +135,15 @@ def data_augment(model, dataset, args, sess, gen_num):
                            for u_ind, u in enumerate(all_users) if len(train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, [])) != 0 \
                               or len(train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, [])) < args.M}
     for num_ind in range(gen_num):
+        
         batch_seq = []
         batch_u = []
         batch_item_idx = []
 
-        for u_ind, u_data in augment_users_data.items():
-            # u_data = train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, [])
-
-            # if len(u_data) == 0 or len(u_data) >= args.M: continue
+        for u_ind, u_data in tqdm(augment_users_data.items(), total=len(augment_users_data)):
 
             seq = np.zeros([args.maxlen], dtype=np.int32)
-            # idx = args.maxlen - 1
-            # for i in reversed(u_data):
-            #     if idx == -1: break
-            #     seq[idx] = i
-            #     idx -= 1
+
             idx = args.maxlen
             for i, _idx in zip(u_data['u_data'], range(0,idx)):
                 seq[_idx] = i
@@ -261,7 +261,7 @@ def predict_eval(model, dataset, args, sess, testorvalid):
 
     aug_eval_data = {u_ind:{"u":u_i_list[0], "i_list":u_i_list[1]} for u_ind, u_i_list in enumerate(eval_data.items(), start=1) if len(train[u_i_list[0]]) >= 1 and len(eval_data[u_i_list[0]]) >= 1}
 
-    for u_ind, u_i_list in aug_eval_data.items():
+    for u_ind, u_i_list in tqdm(aug_eval_data.items(), total=len(aug_eval_data)):
 
         seq, item_idx = create_seq(train, valid, itemnum, u_i_list, args, testorvalid)
 
@@ -430,7 +430,7 @@ def evaluate(rankeditems_list, test_indices, scale_pred_list, test_allitems, seq
             "mrr": 0.,
     }
 
-    pool = multiprocess.pool(cores)
+    pool = multiprocessing.Pool(cores)
 
     batch_data = zip(rankeditems_list, test_indices, scale_pred_list, test_allitems)
     batch_result = pool.map(eval_one_interaction, batch_data)
