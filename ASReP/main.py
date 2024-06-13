@@ -98,13 +98,6 @@ if __name__ == '__main__':
                                         model.is_training: True})
             print('epoch: %d, loss: %8f' % (epoch, loss))
 
-            #tvars = tf.trainable_variables()
-            #tvars_vals = sess.run(tvars, {model.u: u, model.input_seq: seq, model.pos: pos, model.neg: neg,
-            #                              model.is_training: False})
-            #i_epoch_file = open(var_directory_path + str(epoch) + '.txt', 'w')
-            #for var, val in zip(tvars, tvars_vals):
-            #    i_epoch_file.write("{}\n{}\n".format(var.name, val))
-            #i_epoch_file.close()
 
             if (epoch % 20 == 0 and epoch >= 200) or epoch == args.num_epochs:
                 t1 = time.time() - t0

@@ -1,3 +1,0 @@
-2024-03-27 02:21:00,419 - root - INFO - Namespace(data='ml-100k', bs=600, prefix='ml100k_bce', n_degree=30, n_head=2, n_epoch=50, n_layer=2, lr=0.0015, drop_out=0.2, reg=0.2, gpu=1, node_dim=12, time_dim=32, agg_method='lstm', attn_mode='prod', time='time', uniform=True, new_node=False, samplerate=1.0, popnegsample=False, timepopnegsample=False, negsampleeval=1000, disencomponents=None)
-2024-03-27 02:21:01,127 - model - INFO - Aggregation uses LSTM model
-2024-03-27 02:21:01,128 - model - INFO - Using time encoding

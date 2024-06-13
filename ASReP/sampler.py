@@ -3,17 +3,18 @@ from multiprocessing import Process, Queue
 
 
 def random_neq(l, r, s):
-    t = np.random.randint(l, r)
+    rng = np.random.default_rng()
+    t = rng.integers(l, r)
     while t in s:
-        t = np.random.randint(l, r)
+        t = rng.integers(l, r)
     return t
 
 
 def sample_function(user_train, usernum, itemnum, batch_size, maxlen, result_queue, SEED):
     def sample():
-
-        user = np.random.randint(1, usernum + 1)
-        while len(user_train[user]) <= 1: user = np.random.randint(1, usernum + 1)
+        rng = np.random.default_rng()
+        user = rng.integers(1, usernum + 1)
+        while len(user_train[user]) <= 1: user = rng.integers(1, usernum + 1)
 
         seq = np.zeros([maxlen], dtype=np.int32)
         pos = np.zeros([maxlen], dtype=np.int32)
@@ -45,6 +46,7 @@ class WarpSampler(object):
     def __init__(self, User, usernum, itemnum, batch_size=64, maxlen=10, n_workers=1):
         self.result_queue = Queue(maxsize=n_workers * 10)
         self.processors = []
+        rng = np.random.default_rng()
         for i in range(n_workers):
             self.processors.append(
                 Process(target=sample_function, args=(User,
@@ -53,7 +55,7 @@ class WarpSampler(object):
                                                       batch_size,
                                                       maxlen,
                                                       self.result_queue,
-                                                      np.random.randint(2e9)
+                                                      rng.integers(2e9)
                                                       )))
             self.processors[-1].daemon = True
             self.processors[-1].start()

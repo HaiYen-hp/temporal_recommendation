@@ -18,7 +18,7 @@ line = 0
 
 DATASET = 'Cell_Phones_and_Accessories'
 dataname = '/home/zfan/BDSC/projects/datasets/reviews_{}_5.json.gz'.format(DATASET)
-#dataname = '/home/zfan/BDSC/projects/datasets/newamazon_reviews/{}.json.gz'.format(DATASET)
+
 if not os.path.isdir('./'+DATASET):
     os.mkdir('./'+DATASET)
 train_file = './'+DATASET+'/train.txt'

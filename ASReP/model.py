@@ -5,7 +5,7 @@ class Model():
     def __init__(self, usernum, itemnum, args, reuse=None):
         tf.compat.v1.disable_eager_execution()
         self.is_training = tf.compat.v1.placeholder(tf.bool, shape=())
-        # self.is_training = True
+        
         self.u = tf.compat.v1.placeholder(tf.int32, shape=(None))
         self.input_seq = tf.compat.v1.placeholder(tf.int32, shape=(None, args.maxlen))
         self.pos = tf.compat.v1.placeholder(tf.int32, shape=(None, args.maxlen))
@@ -44,9 +44,6 @@ class Model():
             self.seq += t
 
             # Dropout
-            # self.seq = tf.keras.layers.Dropout(
-            #                              rate=args.dropout_rate,
-            #                              training=self.is_training)(self.seq)
             self.seq = tf.keras.layers.Dropout(rate=args.dropout_rate)(self.seq)
             self.seq *= mask
 

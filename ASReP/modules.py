@@ -77,7 +77,6 @@ def get_token_embeddings(vocab_size, num_units, zero_pad=True):
 
 def scaled_dot_product_attention(Q, K, V, key_masks,
                                  causality=False, dropout_rate=0.,
-                                 training=True,
                                  scope="scaled_dot_product_attention"):
     '''
     Q: Packed queries. 3d tensor. [N, T_q, d_k].
@@ -114,7 +113,6 @@ def scaled_dot_product_attention(Q, K, V, key_masks,
         # outputs = mask(outputs, Q, K, type="query")
 
         # dropout
-        # outputs = tf.keras.layers.Dropout(rate=dropout_rate, training=training)(outputs)
         outputs = tf.keras.layers.Dropout(rate=dropout_rate)(outputs)
 
         # weighted sum (context vectors)

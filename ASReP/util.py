@@ -106,7 +106,7 @@ def data_load(data_name, args):
             print('load ', aug_data_signature + str(gen_num_max) + M_20_filename)
         else:
             gen_num_max = 10
-            augdata = augdata_load(aug_data_signature + '10'+M_20_filename)
+            augdata = augdata_load(aug_data_signature + gen_num_max +M_20_filename)
 
     if args.aug_traindata > 0:
         user_train, train_usernum, train_itemnum = load_file_and_sort(train_file, reverse=reverseornot, augdata=augdata, aug_num=args.aug_traindata, M=args.M)
@@ -239,7 +239,8 @@ def create_seq(train, valid, itemnum, u_i_list, args, testorvalid):
         if args.evalnegsample >= len(item_candiates):
             item_idx += item_candiates
         else:
-            item_idx += list(np.random.choice(item_candiates, size=args.evalnegsample, replace=False))
+            rng = np.random.default_rng()
+            item_idx += list(rng.choice(item_candiates, size=args.evalnegsample, replace=False))
     return seq, item_idx
 
 def predict_eval(model, dataset, args, sess, testorvalid):
@@ -249,7 +250,7 @@ def predict_eval(model, dataset, args, sess, testorvalid):
         eval_data = test
     else:
         eval_data = valid
-    # num_valid_interactions = 0
+  
 
     all_predictions_results = []
     all_item_idx = []
@@ -287,6 +288,44 @@ def predict_eval(model, dataset, args, sess, testorvalid):
 
     return all_predictions_results, all_item_idx, all_u, eval_data, real_train
 
+def conditions_(real_train, all_u, ind, seq_dicts, sorted_ind, scale_pred, test_item_idx):
+
+    if len(real_train[all_u[ind]]) <= 3:
+            seq_dicts['short_seq_rankeditems_list'].append(sorted_ind)
+            seq_dicts['short_seq_test_indices'].append(0)
+            seq_dicts['short_seq_scale_pred_list'].append(scale_pred)
+            seq_dicts['short_seq_test_allitems'].append(test_item_idx[0])
+
+    if len(real_train[all_u[ind]]) <= 7:
+        seq_dicts['short7_seq_rankeditems_list'].append(sorted_ind)
+        seq_dicts['short7_seq_test_indices'].append(0)
+        seq_dicts['short7_seq_scale_pred_list'].append(scale_pred)
+        seq_dicts['short7_seq_test_allitems'].append(test_item_idx[0])
+
+    if len(real_train[all_u[ind]]) > 3 and len(real_train[all_u[ind]]) <= 7:
+        seq_dicts['short37_seq_rankeditems_list'].append(sorted_ind)
+        seq_dicts['short37_seq_test_indices'].append(0)
+        seq_dicts['short37_seq_scale_pred_list'].append(scale_pred)
+        seq_dicts['short37_seq_test_allitems'].append(test_item_idx[0])
+
+    if len(real_train[all_u[ind]]) > 3 and len(real_train[all_u[ind]]) < 20:
+        seq_dicts['medium3_seq_rankeditems_list'].append(sorted_ind)
+        seq_dicts['medium3_seq_test_indices'].append(0)
+        seq_dicts['medium3_seq_scale_pred_list'].append(scale_pred)
+        seq_dicts['medium3_seq_test_allitems'].append(test_item_idx[0])
+
+    if len(real_train[all_u[ind]]) > 7 and len(real_train[all_u[ind]]) < 20:
+        seq_dicts['medium7_seq_rankeditems_list'].append(sorted_ind)
+        seq_dicts['medium7_seq_test_indices'].append(0)
+        seq_dicts['medium7_seq_scale_pred_list'].append(scale_pred)
+        seq_dicts['medium7_seq_test_allitems'].append(test_item_idx[0])
+
+    if len(real_train[all_u[ind]]) >= 20:
+        seq_dicts['long_seq_rankeditems_list'].append(sorted_ind)
+        seq_dicts['long_seq_test_indices'].append(0)
+        seq_dicts['long_seq_scale_pred_list'].append(scale_pred)
+        seq_dicts['long_seq_test_allitems'].append(test_item_idx[0])
+
 def evalute_seq(all_predictions_results, all_item_idx, all_u, real_train):
 
     rankeditems_list = []
@@ -319,42 +358,8 @@ def evalute_seq(all_predictions_results, all_item_idx, all_u, real_train):
         scale_pred_list.append(scale_pred)
 
         sorted_ind = list((-1*np.array(unk_predictions)).argsort())
-        if len(real_train[all_u[ind]]) <= 3:
-            seq_dicts['short_seq_rankeditems_list'].append(sorted_ind)
-            seq_dicts['short_seq_test_indices'].append(0)
-            seq_dicts['short_seq_scale_pred_list'].append(scale_pred)
-            seq_dicts['short_seq_test_allitems'].append(test_item_idx[0])
 
-        if len(real_train[all_u[ind]]) <= 7:
-            seq_dicts['short7_seq_rankeditems_list'].append(sorted_ind)
-            seq_dicts['short7_seq_test_indices'].append(0)
-            seq_dicts['short7_seq_scale_pred_list'].append(scale_pred)
-            seq_dicts['short7_seq_test_allitems'].append(test_item_idx[0])
-
-        if len(real_train[all_u[ind]]) > 3 and len(real_train[all_u[ind]]) <= 7:
-            seq_dicts['short37_seq_rankeditems_list'].append(sorted_ind)
-            seq_dicts['short37_seq_test_indices'].append(0)
-            seq_dicts['short37_seq_scale_pred_list'].append(scale_pred)
-            seq_dicts['short37_seq_test_allitems'].append(test_item_idx[0])
-
-        if len(real_train[all_u[ind]]) > 3 and len(real_train[all_u[ind]]) < 20:
-            seq_dicts['medium3_seq_rankeditems_list'].append(sorted_ind)
-            seq_dicts['medium3_seq_test_indices'].append(0)
-            seq_dicts['medium3_seq_scale_pred_list'].append(scale_pred)
-            seq_dicts['medium3_seq_test_allitems'].append(test_item_idx[0])
-
-        if len(real_train[all_u[ind]]) > 7 and len(real_train[all_u[ind]]) < 20:
-            seq_dicts['medium7_seq_rankeditems_list'].append(sorted_ind)
-            seq_dicts['medium7_seq_test_indices'].append(0)
-            seq_dicts['medium7_seq_scale_pred_list'].append(scale_pred)
-            seq_dicts['medium7_seq_test_allitems'].append(test_item_idx[0])
-
-        if len(real_train[all_u[ind]]) >= 20:
-            seq_dicts['long_seq_rankeditems_list'].append(sorted_ind)
-            seq_dicts['long_seq_test_indices'].append(0)
-            seq_dicts['long_seq_scale_pred_list'].append(scale_pred)
-            seq_dicts['long_seq_test_allitems'].append(test_item_idx[0])
-
+        conditions_(real_train, all_u, ind, seq_dicts, sorted_ind, scale_pred, test_item_idx)
 
         rankeditem_oneuserids = [int(test_item_idx[i]) for i in list((-1*np.array(unk_predictions)).argsort())]
         rankeditem_scores = [unk_predictions[i] for i in list((-1*np.array(unk_predictions)).argsort())]
@@ -562,365 +567,3 @@ def evaluate(rankeditems_list, test_indices, scale_pred_list, test_allitems, seq
     pool.close()
     pool.join()
     return results, short_seq_results, short7_seq_results, short37_seq_results, medium3_seq_results, medium7_seq_results, long_seq_results, all_predictions_results_output
-
-# def evaluate(model, dataset, args, sess, testorvalid):
-#     [train, valid, test, original_train, usernum, itemnum] = copy.deepcopy(dataset)
-#     results = {
-#             "precision": np.zeros(len(Ks)),
-#             "recall": np.zeros(len(Ks)),
-#             "ndcg": np.zeros(len(Ks)),
-#             "hit_ratio": np.zeros(len(Ks)),
-#             "auc": 0.,
-#             "mrr": 0.,
-#     }
-
-#     short_seq_results = {
-#             "precision": np.zeros(len(Ks)),
-#             "recall": np.zeros(len(Ks)),
-#             "ndcg": np.zeros(len(Ks)),
-#             "hit_ratio": np.zeros(len(Ks)),
-#             "auc": 0.,
-#             "mrr": 0.,
-#     }
-
-#     long_seq_results = {
-#             "precision": np.zeros(len(Ks)),
-#             "recall": np.zeros(len(Ks)),
-#             "ndcg": np.zeros(len(Ks)),
-#             "hit_ratio": np.zeros(len(Ks)),
-#             "auc": 0.,
-#             "mrr": 0.,
-#     }
-
-#     short7_seq_results = {
-#             "precision": np.zeros(len(Ks)),
-#             "recall": np.zeros(len(Ks)),
-#             "ndcg": np.zeros(len(Ks)),
-#             "hit_ratio": np.zeros(len(Ks)),
-#             "auc": 0.,
-#             "mrr": 0.,
-#     }
-
-#     short37_seq_results = {
-#             "precision": np.zeros(len(Ks)),
-#             "recall": np.zeros(len(Ks)),
-#             "ndcg": np.zeros(len(Ks)),
-#             "hit_ratio": np.zeros(len(Ks)),
-#             "auc": 0.,
-#             "mrr": 0.,
-#     }
-
-#     medium3_seq_results = {
-#             "precision": np.zeros(len(Ks)),
-#             "recall": np.zeros(len(Ks)),
-#             "ndcg": np.zeros(len(Ks)),
-#             "hit_ratio": np.zeros(len(Ks)),
-#             "auc": 0.,
-#             "mrr": 0.,
-#     }
-
-#     medium7_seq_results = {
-#             "precision": np.zeros(len(Ks)),
-#             "recall": np.zeros(len(Ks)),
-#             "ndcg": np.zeros(len(Ks)),
-#             "hit_ratio": np.zeros(len(Ks)),
-#             "auc": 0.,
-#             "mrr": 0.,
-#     }
-#     rs = []
-
-#     if testorvalid == "test":
-#         eval_data = test
-#     else:
-#         eval_data = valid
-#     num_valid_interactions = 0
-#     pool = multiprocess.Pool(cores)
-
-#     all_predictions_results = []
-#     all_item_idx = []
-#     all_u = []
-
-#     batch_seq = []
-#     batch_u = []
-#     batch_item_idx = []
-
-
-#     u_ind = 0
-#     for u, i_list in eval_data.items():
-#         u_ind += 1
-#         if len(train[u]) < 1 or len(eval_data[u]) < 1: continue
-
-
-#         rated = set(train[u])
-#         rated.add(0)
-#         if testorvalid == "test":
-#             valid_set = set(valid.get(u, []))
-#             rated = rated | valid_set
-
-#         seq = np.zeros([args.maxlen], dtype=np.int32)
-#         idx = args.maxlen - 1
-#         if testorvalid == "test":
-#             if u in valid:
-#                 for i in reversed(valid[u]):
-#                     if idx == -1: break
-#                     seq[idx] = i
-#                     idx -= 1
-#         for i in reversed(train[u]):
-#             if idx == -1: break
-#             seq[idx] = i
-#             idx -= 1
-#         item_idx = [i_list[0]]
-#         if args.evalnegsample == -1:
-#             item_idx += list(set([i for i in range(1, itemnum+1)]) - rated - set([i_list[0]]))
-#         else:
-#             item_candiates = list(set([i for i in range(1, itemnum+1)]) - rated - set([i_list[0]]))
-#             if args.evalnegsample >= len(item_candiates):
-#                 item_idx += item_candiates
-#             else:
-#                 item_idx += list(np.random.choice(item_candiates, size=args.evalnegsample, replace=False))
-
-#         batch_seq.append(seq)
-#         batch_item_idx.append(item_idx)
-#         batch_u.append(u)
-
-#         if len(batch_u) % int(args.batch_size / 8) == 0 or u_ind == len(eval_data):
-#             predictions = model.predict(sess, batch_u, batch_seq)
-#             for pred_ind in range(predictions.shape[0]):
-#                 all_predictions_results.append(predictions[pred_ind])
-#                 all_item_idx.append(batch_item_idx[pred_ind])
-#                 all_u.append(batch_u[pred_ind])
-
-#             batch_seq = []
-#             batch_item_idx = []
-#             batch_u = []
-
-
-#     rankeditems_list = []
-#     test_indices = []
-#     scale_pred_list = []
-#     test_allitems = []
-
-#     short_seq_rankeditems_list = []
-#     short_seq_test_indices = []
-#     short_seq_scale_pred_list = []
-#     short_seq_test_allitems = []
-
-#     short7_seq_rankeditems_list = []
-#     short7_seq_test_indices = []
-#     short7_seq_scale_pred_list = []
-#     short7_seq_test_allitems = []
-
-#     short37_seq_rankeditems_list = []
-#     short37_seq_test_indices = []
-#     short37_seq_scale_pred_list = []
-#     short37_seq_test_allitems = []
-
-#     medium3_seq_rankeditems_list = []
-#     medium3_seq_test_indices = []
-#     medium3_seq_scale_pred_list = []
-#     medium3_seq_test_allitems = []
-
-#     medium7_seq_rankeditems_list = []
-#     medium7_seq_test_indices = []
-#     medium7_seq_scale_pred_list = []
-#     medium7_seq_test_allitems = []
-
-
-#     long_seq_rankeditems_list = []
-#     long_seq_test_indices = []
-#     long_seq_scale_pred_list = []
-#     long_seq_test_allitems = []
-
-#     rankeditemid_list = []
-#     rankeditemid_scores = []
-
-#     all_predictions_results_output = []
-
-#     for ind in range(len(all_predictions_results)):
-#         test_item_idx = all_item_idx[ind]
-#         unk_predictions = all_predictions_results[ind][test_item_idx]
-
-#         scaler = MinMaxScaler()
-#         scale_pred = list(np.transpose(scaler.fit_transform(np.transpose(np.array([unk_predictions]))))[0])
-
-#         rankeditems_list.append(list((-1*np.array(unk_predictions)).argsort()))
-#         test_indices.append(0)
-#         test_allitems.append(test_item_idx[0])
-#         scale_pred_list.append(scale_pred)
-
-#         if 'aug' in args.dataset or 'itemco' in args.dataset or args.aug_traindata > 0:
-#             real_train = original_train
-#         else:
-#             real_train = train
-
-#         sorted_ind = list((-1*np.array(unk_predictions)).argsort())
-#         if len(real_train[all_u[ind]]) <= 3:
-#             short_seq_rankeditems_list.append(sorted_ind)
-#             short_seq_test_indices.append(0)
-#             short_seq_scale_pred_list.append(scale_pred)
-#             short_seq_test_allitems.append(test_item_idx[0])
-
-#         if len(real_train[all_u[ind]]) <= 7:
-#             short7_seq_rankeditems_list.append(sorted_ind)
-#             short7_seq_test_indices.append(0)
-#             short7_seq_scale_pred_list.append(scale_pred)
-#             short7_seq_test_allitems.append(test_item_idx[0])
-
-#         if len(real_train[all_u[ind]]) > 3 and len(real_train[all_u[ind]]) <= 7:
-#             short37_seq_rankeditems_list.append(sorted_ind)
-#             short37_seq_test_indices.append(0)
-#             short37_seq_scale_pred_list.append(scale_pred)
-#             short37_seq_test_allitems.append(test_item_idx[0])
-
-#         if len(real_train[all_u[ind]]) > 3 and len(real_train[all_u[ind]]) < 20:
-#             medium3_seq_rankeditems_list.append(sorted_ind)
-#             medium3_seq_test_indices.append(0)
-#             medium3_seq_scale_pred_list.append(scale_pred)
-#             medium3_seq_test_allitems.append(test_item_idx[0])
-
-#         if len(real_train[all_u[ind]]) > 7 and len(real_train[all_u[ind]]) < 20:
-#             medium7_seq_rankeditems_list.append(sorted_ind)
-#             medium7_seq_test_indices.append(0)
-#             medium7_seq_scale_pred_list.append(scale_pred)
-#             medium7_seq_test_allitems.append(test_item_idx[0])
-
-#         if len(real_train[all_u[ind]]) >= 20:
-#             long_seq_rankeditems_list.append(sorted_ind)
-#             long_seq_test_indices.append(0)
-#             long_seq_scale_pred_list.append(scale_pred)
-#             long_seq_test_allitems.append(test_item_idx[0])
-
-#         rankeditem_oneuserids = [int(test_item_idx[i]) for i in list((-1*np.array(unk_predictions)).argsort())]
-#         rankeditem_scores = [unk_predictions[i] for i in list((-1*np.array(unk_predictions)).argsort())]
-
-#         one_pred_result = {"u_ind": int(all_u[ind]), "u_pos_gd": int(test_item_idx[0])}
-#         one_pred_result["predicted"] = [int(item_id_pred) for item_id_pred in rankeditem_oneuserids[:100]]
-#         all_predictions_results_output.append(one_pred_result)
-
-#     batch_data = zip(rankeditems_list, test_indices, scale_pred_list, test_allitems)
-#     batch_result = pool.map(eval_one_interaction, batch_data)
-#     for re in batch_result:
-#         results["precision"] += re["precision"]
-#         results["recall"] += re["recall"]
-#         results["ndcg"] += re["ndcg"]
-#         results["hit_ratio"] += re["hit_ratio"]
-#         results["auc"] += re["auc"]
-#         results["mrr"] += re["mrr"]
-#     results["precision"] /= len(eval_data)
-#     results["recall"] /= len(eval_data)
-#     results["ndcg"] /= len(eval_data)
-#     results["hit_ratio"] /= len(eval_data)
-#     results["auc"] /= len(eval_data)
-#     results["mrr"] /= len(eval_data)
-#     print(f"testing #of users: {len(eval_data)}")
-
-#     short_seq_batch_data = zip(short_seq_rankeditems_list, short_seq_test_indices, short_seq_scale_pred_list, short_seq_test_allitems)
-#     short_seq_batch_result = pool.map(eval_one_interaction, short_seq_batch_data)
-#     for re in short_seq_batch_result:
-#         short_seq_results["precision"] += re["precision"]
-#         short_seq_results["recall"] += re["recall"]
-#         short_seq_results["ndcg"] += re["ndcg"]
-#         short_seq_results["hit_ratio"] += re["hit_ratio"]
-#         short_seq_results["auc"] += re["auc"]
-#         short_seq_results["mrr"] += re["mrr"]
-#     short_seq_results["precision"] /= len(short_seq_test_indices)
-#     short_seq_results["recall"] /= len(short_seq_test_indices)
-#     short_seq_results["ndcg"] /= len(short_seq_test_indices)
-#     short_seq_results["hit_ratio"] /= len(short_seq_test_indices)
-#     short_seq_results["auc"] /= len(short_seq_test_indices)
-#     short_seq_results["mrr"] /= len(short_seq_test_indices)
-
-#     print(f"testing #of short seq users with less than 3 training points: {len(short_seq_test_indices)}")
-
-#     short7_seq_batch_data = zip(short7_seq_rankeditems_list, short7_seq_test_indices, short7_seq_scale_pred_list, short7_seq_test_allitems)
-#     short7_seq_batch_result = pool.map(eval_one_interaction, short7_seq_batch_data)
-#     for re in short7_seq_batch_result:
-#         short7_seq_results["precision"] += re["precision"]
-#         short7_seq_results["recall"] += re["recall"]
-#         short7_seq_results["ndcg"] += re["ndcg"]
-#         short7_seq_results["hit_ratio"] += re["hit_ratio"]
-#         short7_seq_results["auc"] += re["auc"]
-#         short7_seq_results["mrr"] += re["mrr"]
-#     short7_seq_results["precision"] /= len(short7_seq_test_indices)
-#     short7_seq_results["recall"] /= len(short7_seq_test_indices)
-#     short7_seq_results["ndcg"] /= len(short7_seq_test_indices)
-#     short7_seq_results["hit_ratio"] /= len(short7_seq_test_indices)
-#     short7_seq_results["auc"] /= len(short7_seq_test_indices)
-#     short7_seq_results["mrr"] /= len(short7_seq_test_indices)
-#     print(f"testing #of short seq users with less than 7 training points: {len(short7_seq_test_indices)}")
-
-
-#     short37_seq_batch_data = zip(short37_seq_rankeditems_list, short37_seq_test_indices, short37_seq_scale_pred_list, short37_seq_test_allitems)
-#     short37_seq_batch_result = pool.map(eval_one_interaction, short37_seq_batch_data)
-#     for re in short37_seq_batch_result:
-#         short37_seq_results["precision"] += re["precision"]
-#         short37_seq_results["recall"] += re["recall"]
-#         short37_seq_results["ndcg"] += re["ndcg"]
-#         short37_seq_results["hit_ratio"] += re["hit_ratio"]
-#         short37_seq_results["auc"] += re["auc"]
-#         short37_seq_results["mrr"] += re["mrr"]
-#     short37_seq_results["precision"] /= len(short37_seq_test_indices)
-#     short37_seq_results["recall"] /= len(short37_seq_test_indices)
-#     short37_seq_results["ndcg"] /= len(short37_seq_test_indices)
-#     short37_seq_results["hit_ratio"] /= len(short37_seq_test_indices)
-#     short37_seq_results["auc"] /= len(short37_seq_test_indices)
-#     short37_seq_results["mrr"] /= len(short37_seq_test_indices)
-#     print(f"testing #of short seq users with 3 - 7 training points: {len(short37_seq_test_indices)}")
-
-
-
-#     medium3_seq_batch_data = zip(medium3_seq_rankeditems_list, medium3_seq_test_indices, medium3_seq_scale_pred_list, medium3_seq_test_allitems)
-#     medium3_seq_batch_result = pool.map(eval_one_interaction, medium3_seq_batch_data)
-#     for re in medium3_seq_batch_result:
-#         medium3_seq_results["precision"] += re["precision"]
-#         medium3_seq_results["recall"] += re["recall"]
-#         medium3_seq_results["ndcg"] += re["ndcg"]
-#         medium3_seq_results["hit_ratio"] += re["hit_ratio"]
-#         medium3_seq_results["auc"] += re["auc"]
-#         medium3_seq_results["mrr"] += re["mrr"]
-#     medium3_seq_results["precision"] /= len(medium3_seq_test_indices)
-#     medium3_seq_results["recall"] /= len(medium3_seq_test_indices)
-#     medium3_seq_results["ndcg"] /= len(medium3_seq_test_indices)
-#     medium3_seq_results["hit_ratio"] /= len(medium3_seq_test_indices)
-#     medium3_seq_results["auc"] /= len(medium3_seq_test_indices)
-#     medium3_seq_results["mrr"] /= len(medium3_seq_test_indices)
-#     print(f"testing #of short seq users with medium3 training points: {len(medium3_seq_test_indices)}")
-
-
-
-#     medium7_seq_batch_data = zip(medium7_seq_rankeditems_list, medium7_seq_test_indices, medium7_seq_scale_pred_list, medium7_seq_test_allitems)
-#     medium7_seq_batch_result = pool.map(eval_one_interaction, medium7_seq_batch_data)
-#     for re in medium7_seq_batch_result:
-#         medium7_seq_results["precision"] += re["precision"]
-#         medium7_seq_results["recall"] += re["recall"]
-#         medium7_seq_results["ndcg"] += re["ndcg"]
-#         medium7_seq_results["hit_ratio"] += re["hit_ratio"]
-#         medium7_seq_results["auc"] += re["auc"]
-#         medium7_seq_results["mrr"] += re["mrr"]
-#     medium7_seq_results["precision"] /= len(medium7_seq_test_indices)
-#     medium7_seq_results["recall"] /= len(medium7_seq_test_indices)
-#     medium7_seq_results["ndcg"] /= len(medium7_seq_test_indices)
-#     medium7_seq_results["hit_ratio"] /= len(medium7_seq_test_indices)
-#     medium7_seq_results["auc"] /= len(medium7_seq_test_indices)
-#     medium7_seq_results["mrr"] /= len(medium7_seq_test_indices)
-#     print(f"testing #of short seq users with medium7 training points: {len(medium7_seq_test_indices)}")
-
-
-#     long_seq_batch_data = zip(long_seq_rankeditems_list, long_seq_test_indices, long_seq_scale_pred_list, long_seq_test_allitems)
-#     long_seq_batch_result = pool.map(eval_one_interaction, long_seq_batch_data)
-#     for re in long_seq_batch_result:
-#         long_seq_results["precision"] += re["precision"]
-#         long_seq_results["recall"] += re["recall"]
-#         long_seq_results["ndcg"] += re["ndcg"]
-#         long_seq_results["hit_ratio"] += re["hit_ratio"]
-#         long_seq_results["auc"] += re["auc"]
-#         long_seq_results["mrr"] += re["mrr"]
-#     long_seq_results["precision"] /= len(long_seq_test_indices)
-#     long_seq_results["recall"] /= len(long_seq_test_indices)
-#     long_seq_results["ndcg"] /= len(long_seq_test_indices)
-#     long_seq_results["hit_ratio"] /= len(long_seq_test_indices)
-#     long_seq_results["auc"] /= len(long_seq_test_indices)
-#     long_seq_results["mrr"] /= len(long_seq_test_indices)
-
-#     print(f"testing #of short seq users with >= 20 training points: {len(long_seq_test_indices)}")
-#     return results, short_seq_results, short7_seq_results, short37_seq_results, medium3_seq_results, medium7_seq_results, long_seq_results, all_predictions_results_output

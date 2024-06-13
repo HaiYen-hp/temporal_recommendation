@@ -1,2 +1,0 @@
-2024-03-26 01:39:41,012 - root - INFO - Namespace(data='ml-100k', bs=200, prefix='ml100k_bce', n_degree=35, n_head=3, n_epoch=50, n_layer=3, lr=0.0011, drop_out=0.3, reg=0.2, gpu=0, node_dim=32, time_dim=32, agg_method='attn', attn_mode='prod', time='time', uniform=True, new_node=False, samplerate=1.0, popnegsample=False, timepopnegsample=False, negsampleeval=2000, disencomponents=None)
-2024-03-26 01:39:41,720 - model - INFO - Aggregation uses attention model
