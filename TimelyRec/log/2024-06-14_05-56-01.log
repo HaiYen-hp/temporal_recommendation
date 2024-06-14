@@ -1,0 +1,154 @@
+2024-06-14 05:56:01 - 2024-06-14 05:56:01.630951: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+2024-06-14 05:56:01 - To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-06-14 05:56:01 - 2024-06-14 05:56:01.787906: E tensorflow/stream_executor/cuda/cuda_blas.cc:2981] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2024-06-14 05:56:02 - 2024-06-14 05:56:02.473461: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer.so.7'; dlerror: libnvinfer.so.7: cannot open shared object file: No such file or directory
+2024-06-14 05:56:02 - 2024-06-14 05:56:02.473549: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer_plugin.so.7'; dlerror: libnvinfer_plugin.so.7: cannot open shared object file: No such file or directory
+2024-06-14 05:56:02 - 2024-06-14 05:56:02.473559: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Cannot dlopen some TensorRT libraries. If you would like to use Nvidia GPU with TensorRT, please make sure the missing libraries mentioned above are installed properly.
+2024-06-14 05:56:03 - 2024-06-14 05:56:03.384256: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+2024-06-14 05:56:03 - To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.551432: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 9633 MB memory:  -> device: 0, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:04:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.553254: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /job:localhost/replica:0/task:0/device:GPU:1 with 9633 MB memory:  -> device: 1, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:05:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.555013: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /job:localhost/replica:0/task:0/device:GPU:2 with 9633 MB memory:  -> device: 2, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:08:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.556763: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /job:localhost/replica:0/task:0/device:GPU:3 with 9633 MB memory:  -> device: 3, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:82:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.558368: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /job:localhost/replica:0/task:0/device:GPU:4 with 4606 MB memory:  -> device: 4, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:86:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.559947: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /job:localhost/replica:0/task:0/device:GPU:5 with 4012 MB memory:  -> device: 5, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:89:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.561537: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /job:localhost/replica:0/task:0/device:GPU:6 with 3854 MB memory:  -> device: 6, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:8a:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.844047: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 9633 MB memory:  -> device: 0, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:04:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.845163: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /job:localhost/replica:0/task:0/device:GPU:1 with 9633 MB memory:  -> device: 1, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:05:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.846297: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /job:localhost/replica:0/task:0/device:GPU:2 with 9633 MB memory:  -> device: 2, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:08:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.847475: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /job:localhost/replica:0/task:0/device:GPU:3 with 9633 MB memory:  -> device: 3, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:82:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.848434: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /job:localhost/replica:0/task:0/device:GPU:4 with 4606 MB memory:  -> device: 4, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:86:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.849366: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /job:localhost/replica:0/task:0/device:GPU:5 with 4012 MB memory:  -> device: 5, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:89:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.850376: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /job:localhost/replica:0/task:0/device:GPU:6 with 3854 MB memory:  -> device: 6, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:8a:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.879714: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /device:GPU:0 with 9633 MB memory:  -> device: 0, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:04:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.880822: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /device:GPU:1 with 9633 MB memory:  -> device: 1, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:05:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.881915: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /device:GPU:2 with 9633 MB memory:  -> device: 2, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:08:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.883088: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /device:GPU:3 with 9633 MB memory:  -> device: 3, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:82:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.884018: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /device:GPU:4 with 4606 MB memory:  -> device: 4, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:86:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.884970: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /device:GPU:5 with 4012 MB memory:  -> device: 5, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:89:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - 2024-06-14 05:56:16.885848: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1616] Created device /device:GPU:6 with 3854 MB memory:  -> device: 6, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:8a:00.0, compute capability: 7.5
+2024-06-14 05:56:16 - usage: train.py [-h] --train_dir TRAIN_DIR [--batch_size BATCH_SIZE] [--lr LR]
+2024-06-14 05:56:16 -                 [--patience PATIENCE] [--embedding_size EMBEDDING_SIZE]
+2024-06-14 05:56:16 -                 [--sequence_length SEQUENCE_LENGTH] [--num_epochs NUM_EPOCHS]
+2024-06-14 05:56:16 -                 [--dropout_rate DROPOUT_RATE] [--width WIDTH] [--depth DEPTH]
+2024-06-14 05:56:16 - train.py: error: the following arguments are required: --train_dir
+2024-06-14 05:56:16 - List GPU devices used
+2024-06-14 05:56:16 - [name: "/device:CPU:0"
+2024-06-14 05:56:16 - device_type: "CPU"
+2024-06-14 05:56:16 - memory_limit: 268435456
+2024-06-14 05:56:16 - locality {
+2024-06-14 05:56:16 - }
+2024-06-14 05:56:16 - incarnation: 6069079685088011485
+2024-06-14 05:56:16 - xla_global_id: -1
+2024-06-14 05:56:16 - , name: "/device:GPU:0"
+2024-06-14 05:56:16 - device_type: "GPU"
+2024-06-14 05:56:16 - memory_limit: 10101653504
+2024-06-14 05:56:16 - locality {
+2024-06-14 05:56:16 -   bus_id: 1
+2024-06-14 05:56:16 -   links {
+2024-06-14 05:56:16 -   }
+2024-06-14 05:56:16 - }
+2024-06-14 05:56:16 - incarnation: 979261605377306925
+2024-06-14 05:56:16 - physical_device_desc: "device: 0, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:04:00.0, compute capability: 7.5"
+2024-06-14 05:56:16 - xla_global_id: 416903419
+2024-06-14 05:56:16 - , name: "/device:GPU:1"
+2024-06-14 05:56:16 - device_type: "GPU"
+2024-06-14 05:56:16 - memory_limit: 10101653504
+2024-06-14 05:56:16 - locality {
+2024-06-14 05:56:16 -   bus_id: 1
+2024-06-14 05:56:16 -   links {
+2024-06-14 05:56:16 -     link {
+2024-06-14 05:56:16 -       device_id: 2
+2024-06-14 05:56:16 -       type: "StreamExecutor"
+2024-06-14 05:56:16 -       strength: 1
+2024-06-14 05:56:16 -     }
+2024-06-14 05:56:16 -   }
+2024-06-14 05:56:16 - }
+2024-06-14 05:56:16 - incarnation: 16646926113459749981
+2024-06-14 05:56:16 - physical_device_desc: "device: 1, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:05:00.0, compute capability: 7.5"
+2024-06-14 05:56:16 - xla_global_id: 2144165316
+2024-06-14 05:56:16 - , name: "/device:GPU:2"
+2024-06-14 05:56:16 - device_type: "GPU"
+2024-06-14 05:56:16 - memory_limit: 10101653504
+2024-06-14 05:56:16 - locality {
+2024-06-14 05:56:16 -   bus_id: 1
+2024-06-14 05:56:16 -   links {
+2024-06-14 05:56:16 -     link {
+2024-06-14 05:56:16 -       device_id: 1
+2024-06-14 05:56:16 -       type: "StreamExecutor"
+2024-06-14 05:56:16 -       strength: 1
+2024-06-14 05:56:16 -     }
+2024-06-14 05:56:16 -   }
+2024-06-14 05:56:16 - }
+2024-06-14 05:56:16 - incarnation: 377195460914615072
+2024-06-14 05:56:17 - physical_device_desc: "device: 2, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:08:00.0, compute capability: 7.5"
+2024-06-14 05:56:17 - xla_global_id: 1651660799
+2024-06-14 05:56:17 - , name: "/device:GPU:3"
+2024-06-14 05:56:17 - device_type: "GPU"
+2024-06-14 05:56:17 - memory_limit: 10101653504
+2024-06-14 05:56:17 - locality {
+2024-06-14 05:56:17 -   bus_id: 2
+2024-06-14 05:56:17 -   numa_node: 1
+2024-06-14 05:56:17 -   links {
+2024-06-14 05:56:17 -     link {
+2024-06-14 05:56:17 -       device_id: 4
+2024-06-14 05:56:17 -       type: "StreamExecutor"
+2024-06-14 05:56:17 -       strength: 1
+2024-06-14 05:56:17 -     }
+2024-06-14 05:56:17 -   }
+2024-06-14 05:56:17 - }
+2024-06-14 05:56:17 - incarnation: 16147501400614200843
+2024-06-14 05:56:17 - physical_device_desc: "device: 3, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:82:00.0, compute capability: 7.5"
+2024-06-14 05:56:17 - xla_global_id: 878896533
+2024-06-14 05:56:17 - , name: "/device:GPU:4"
+2024-06-14 05:56:17 - device_type: "GPU"
+2024-06-14 05:56:17 - memory_limit: 4830461952
+2024-06-14 05:56:17 - locality {
+2024-06-14 05:56:17 -   bus_id: 2
+2024-06-14 05:56:17 -   numa_node: 1
+2024-06-14 05:56:17 -   links {
+2024-06-14 05:56:17 -     link {
+2024-06-14 05:56:17 -       device_id: 3
+2024-06-14 05:56:17 -       type: "StreamExecutor"
+2024-06-14 05:56:17 -       strength: 1
+2024-06-14 05:56:17 -     }
+2024-06-14 05:56:17 -   }
+2024-06-14 05:56:17 - }
+2024-06-14 05:56:17 - incarnation: 8325016699964278365
+2024-06-14 05:56:17 - physical_device_desc: "device: 4, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:86:00.0, compute capability: 7.5"
+2024-06-14 05:56:17 - xla_global_id: 615190153
+2024-06-14 05:56:17 - , name: "/device:GPU:5"
+2024-06-14 05:56:17 - device_type: "GPU"
+2024-06-14 05:56:17 - memory_limit: 4207607808
+2024-06-14 05:56:17 - locality {
+2024-06-14 05:56:17 -   bus_id: 2
+2024-06-14 05:56:17 -   numa_node: 1
+2024-06-14 05:56:17 -   links {
+2024-06-14 05:56:17 -     link {
+2024-06-14 05:56:17 -       device_id: 6
+2024-06-14 05:56:17 -       type: "StreamExecutor"
+2024-06-14 05:56:17 -       strength: 1
+2024-06-14 05:56:17 -     }
+2024-06-14 05:56:17 -   }
+2024-06-14 05:56:17 - }
+2024-06-14 05:56:17 - incarnation: 3731587885723976423
+2024-06-14 05:56:17 - physical_device_desc: "device: 5, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:89:00.0, compute capability: 7.5"
+2024-06-14 05:56:17 - xla_global_id: 1769886423
+2024-06-14 05:56:17 - , name: "/device:GPU:6"
+2024-06-14 05:56:17 - device_type: "GPU"
+2024-06-14 05:56:17 - memory_limit: 4041932800
+2024-06-14 05:56:17 - locality {
+2024-06-14 05:56:17 -   bus_id: 2
+2024-06-14 05:56:17 -   numa_node: 1
+2024-06-14 05:56:17 -   links {
+2024-06-14 05:56:17 -     link {
+2024-06-14 05:56:17 -       device_id: 5
+2024-06-14 05:56:17 -       type: "StreamExecutor"
+2024-06-14 05:56:17 -       strength: 1
+2024-06-14 05:56:17 -     }
+2024-06-14 05:56:17 -   }
+2024-06-14 05:56:17 - }
+2024-06-14 05:56:17 - incarnation: 2706738909398165746
+2024-06-14 05:56:17 - physical_device_desc: "device: 6, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:8a:00.0, compute capability: 7.5"
+2024-06-14 05:56:17 - xla_global_id: 893286608
+2024-06-14 05:56:17 - ]

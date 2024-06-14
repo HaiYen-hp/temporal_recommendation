@@ -83,7 +83,7 @@ def hit_at_k(r, k):
     else:
         return 0.
 
-def Fone(pre, rec):
+def fone(pre, rec):
     if pre + rec > 0:
         return (2.0 * pre * rec) / (pre + rec)
     else:
@@ -98,7 +98,7 @@ def auc(ground_truth, prediction):
 
 def mrr(r):
     r = np.array(r)
-    if float(np.sum(r)) == 0.:
+    if np.isclose(np.sum(r), 0, atol=1e-9):
         return 0.
     else:
         return np.reciprocal(np.nonzero(r==1)[0]+1, dtype=np.float64)[0]

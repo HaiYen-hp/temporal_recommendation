@@ -24,6 +24,3 @@ class PositionalEncoding(Layer):
     def compute_output_shape(self, input_shape):
         return (input_shape[0], input_shape[1], self.output_dim)
 
-# x=tf.constant([[1],[2],[3]])
-# print(x.get_shape())
-# tf.transpose(x, perm=[1,0]).get_shape()

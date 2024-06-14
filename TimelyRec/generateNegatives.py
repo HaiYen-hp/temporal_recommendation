@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-def getNegativeSamples(tr_dataset, userUninteractedItems, userUninteractedTimes, num_user, num_items):
+def get_negative_samples(tr_dataset, userUninteractedItems, userUninteractedTimes):
     dataset = tr_dataset.groupby('user_id')
 
     final_neg_item_data = pd.DataFrame()

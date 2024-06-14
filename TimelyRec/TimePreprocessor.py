@@ -9,7 +9,7 @@ def _mid_equal_timestamp(mid, userSortedTimestamp_ts, timestamp, sequence_length
         if userSortedTimestamp_ts[i] != timestamp:
             return userSortedTimestamp_ts[i+1-sequence_length : i+1], userSortedTimestamp_iid[i+1-sequence_length : i+1]
 
-def findKMostRecentTimestamps(userSortedTimestamp, timestamp, sequence_length):
+def find_kmost_recent_timestamps(userSortedTimestamp, timestamp, sequence_length):
     length = len(userSortedTimestamp)
     userSortedTimestamp_ts = [0]*sequence_length + userSortedTimestamp.timestamp.tolist()
     userSortedTimestamp_iid = [0]*sequence_length + userSortedTimestamp.item_id.tolist()
@@ -47,7 +47,7 @@ def timestamp_processor(dataset, userSortedTimestamp, sequence_length):
     dataset = dataset.join(pydatetime)
     dataset = dataset.join(day_of_week)
 
-    KRecentTSItem = list(map(lambda x: findKMostRecentTimestamps(userSortedTimestamp[x[0]], x[1], sequence_length), zip(dataset.user_id, dataset.timestamp)))
+    KRecentTSItem = list(map(lambda x: find_kmost_recent_timestamps(userSortedTimestamp[x[0]], x[1], sequence_length), zip(dataset.user_id, dataset.timestamp)))
     KRecentTimestamps = pd.DataFrame(list(map(lambda x: x[0], KRecentTSItem)), columns=list(map(lambda x: 'timestamp' + str(x), range(sequence_length))))
     KRecentItems = pd.DataFrame(list(map(lambda x: x[1], KRecentTSItem)), columns=list(map(lambda x: 'item_id' + str(x), range(sequence_length))))
     

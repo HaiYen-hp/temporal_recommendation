@@ -1,6 +1,7 @@
 import sys
 import os
 import keras
+import argparse
 import random as rn
 import numpy as np
 import tensorflow as tf
@@ -10,6 +11,8 @@ from tensorflow.python.keras.regularizers import l2
 from tensorflow.python.keras import backend as K
 from keras.models import Model
 from evaluate import evaluate
+from tensorflow.python.client import device_lib
+
 config = tf.compat.v1.ConfigProto()
 config.gpu_options.allow_growth = True
 
@@ -20,29 +23,47 @@ import math
 from sklearn.utils import shuffle
 import model as M
 import time
-from generateNegatives import getNegativeSamples
+from generateNegatives import get_negative_samples
 from TimePreprocessor import timestamp_processor
-
 
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 os.environ["TF_USE_LEGACY_KERAS"]='1'
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"]="3"
+
+print("List GPU devices used")
+print(device_lib.list_local_devices())
 
 PATH_SAVED_MODEL = './saved_model'
-embedding_size = 64
-batch_size = 600
-learning_rate = 0.0026
-patience = 10
-n_epoch = 60
-sequence_length = 5
-width = 128
-depth = 6
-dropout_rate = 0.15
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--train_dir', default='movielens',required=True)
+parser.add_argument('--batch_size', default=128, type=int)
+parser.add_argument('--lr', default=0.001, type=float)
+parser.add_argument('--patience', default=10, type=int)
+parser.add_argument('--embedding_size', default=50, type=int)
+parser.add_argument('--sequence_length', default=5, type=int)
+parser.add_argument('--num_epochs', default=100, type=int)
+parser.add_argument('--dropout_rate', default=0.5, type=float)
+parser.add_argument('--width', default=128, type=int)
+parser.add_argument('--depth', default=6, type=int)
 
+args = parser.parse_args()
+embedding_size = args.embedding_size
+batch_size = args.batch_size
+learning_rate = args.lr
+patience = args.patience
+n_epoch = args.num_epochs
+sequence_length = args.sequence_length
+width = args.width
+depth = args.depth
+dropout_rate = args.dropout_rate
+
+args = parser.parse_args()
 columns = "user_id,item_id,rating,timestamp"
-tr_dataset = pd.read_csv("movielens/train.txt",sep=',',names=columns.split(",")) 
-va_dataset = pd.read_csv("movielens/validation.txt",sep=',',names=columns.split(","))
-te_dataset = pd.read_csv("movielens/test.txt",sep=',',names=columns.split(","))
+tr_dataset = pd.read_csv(f"{args.train_dir}/train.txt",sep=',',names=columns.split(",")) 
+va_dataset = pd.read_csv(f"{args.train_dir}/validation.txt",sep=',',names=columns.split(","))
+te_dataset = pd.read_csv(f"{args.train_dir}/test.txt",sep=',',names=columns.split(","))
 
 userSortedTimestamp = {}
 for uid in tr_dataset.user_id.unique().tolist():
@@ -78,7 +99,7 @@ for uid, user_data in dataset:
     userUninteractedItems[uid] = list(set(range(1, num_items + 1)) - set(userItem))
     userUninteractedTimes[uid] = list(set(range(min_th, max_th + 1)) - set(userTime))
 
-model = M.TimelyRec([6], num_users, num_items, embedding_size, sequence_length, width, depth, dropout=dropout_rate)
+model = M.TimelyRec(num_users, num_items, embedding_size, sequence_length, width, depth, dropout=dropout_rate)
 
 model.compile(loss='binary_crossentropy',
               optimizer=Adam(learning_rate=learning_rate))
@@ -93,7 +114,7 @@ for epoch in range(n_epoch):
     print ("Epoch " + str(epoch))
     print ("Generating negative samples...")
     t0 = time.time()
-    tr_neg_item_dataset, tr_neg_time_dataset, tr_neg_itemtime_dataset = getNegativeSamples(tr_dataset, userUninteractedItems, userUninteractedTimes, num_users, num_items)
+    tr_neg_item_dataset, tr_neg_time_dataset, tr_neg_itemtime_dataset = get_negative_samples(tr_dataset, userUninteractedItems, userUninteractedTimes)
 
     tr_neg_time_dataset = tr_neg_time_dataset.drop(['year', 'month', 'date','hour', 'day_of_week'], axis=1)
     for i in range(sequence_length):

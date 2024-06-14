@@ -2,6 +2,7 @@ import os
 import time
 import argparse
 import tensorflow as tf
+from tensorflow.python.client import device_lib
 from sampler import WarpSampler
 from model import Model
 from tqdm import tqdm
@@ -16,6 +17,11 @@ warnings.filterwarnings("ignore")
 
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 os.environ["TF_USE_LEGACY_KERAS"]='1'
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"]="1,2"
+
+print("List GPU devices used")
+print(device_lib.list_local_devices())
 
 def str2bool(s):
     if s not in {'False', 'True'}:

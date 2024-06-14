@@ -239,8 +239,7 @@ def create_seq(train, valid, itemnum, u_i_list, args, testorvalid):
         if args.evalnegsample >= len(item_candiates):
             item_idx += item_candiates
         else:
-            rng = np.random.default_rng(seed=2e9)
-            item_idx += list(rng.choice(item_candiates, size=args.evalnegsample, replace=False))
+            item_idx += list(np.random.choice(item_candiates, size=args.evalnegsample, replace=False))
     return seq, item_idx
 
 def predict_eval(model, dataset, args, sess, testorvalid):

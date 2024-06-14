@@ -75,8 +75,7 @@ class Model():
         neg_emb = tf.nn.embedding_lookup(item_emb_table, neg)
         seq_emb = tf.reshape(self.seq, [tf.shape(self.input_seq)[0] * args.maxlen, args.hidden_units])
 
-        #self.test_item = tf.placeholder(tf.int32, shape=(101))
-        #test_item_emb = tf.nn.embedding_lookup(item_emb_table, self.test_item)
+    
         test_item_emb = item_emb_table
         self.test_logits = tf.matmul(seq_emb, tf.transpose(test_item_emb))
         self.test_logits = tf.reshape(self.test_logits, [tf.shape(self.input_seq)[0], args.maxlen, itemnum+1])

@@ -38,16 +38,13 @@ def evaluate(model, va_dataset, num_candidates, sequence_length):
         prob = pd.DataFrame(model.predict([user_input, item_input, month_input, day_input, date_input, hour_input, timestamp_input] + [recent_month_inputs[j] for j in range(sequence_length)]+ [recent_day_inputs[j] for j in range(sequence_length)]+ [recent_date_inputs[j] for j in range(sequence_length)]+ [recent_hour_inputs[j] for j in range(sequence_length)]+ [recent_timestamp_inputs[j] for j in range(sequence_length)] + [recent_itemid_inputs[j] for j in range(sequence_length)], batch_size=len(va_batch)), columns=['prob'])
         
         va_batch = (va_batch.reset_index(drop=True)).join(prob)
-        # print(f'len_top30: {len(top30)}')
-        # print(f'len_item_input {len(item_input)}')
-        # print(item_input)
+
         metric_Ks = {}
         for k in Ks:    
             metric_Ks[f'top{k}'] = va_batch.nlargest(k, 'prob')
             metric_Ks[f'hit{k}'] = int(1 in metric_Ks[f'top{k}'].rating.tolist())
             
-            # metric_Ks[f'intersect{k}'] = len(set(item_input[:k]) & set(metric_Ks[f'top{k}'].item_id))
-            # metric_Ks[f'recall{k}'] = metric_Ks[f'intersect{k}']/len(item_input[:k])        
+       
             if metric_Ks[f'hit{k}']:
                 metric_Ks[f'intersect{k}'] = len(set(item_input[:k]) & set(metric_Ks[f'top{k}'].item_id))
                 ind = metric_Ks[f'top{k}'].rating.tolist().index(1) + 1
@@ -56,8 +53,6 @@ def evaluate(model, va_dataset, num_candidates, sequence_length):
                 metric_Ks[f'ndcg{k}'] = 0
             
 
-        # print(metric_Ks.keys())
-        HR30 += metric_Ks['hit30']
         HR50 += metric_Ks['hit50']
         NDCG30 += metric_Ks['ndcg30']
         NDCG50 += metric_Ks['ndcg50']

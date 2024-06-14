@@ -77,6 +77,7 @@ def get_token_embeddings(vocab_size, num_units, zero_pad=True):
 
 def scaled_dot_product_attention(Q, K, V, key_masks,
                                  causality=False, dropout_rate=0.,
+                                 training=True,
                                  scope="scaled_dot_product_attention"):
     '''
     Q: Packed queries. 3d tensor. [N, T_q, d_k].
@@ -85,7 +86,6 @@ def scaled_dot_product_attention(Q, K, V, key_masks,
     key_masks: A 2d tensor with shape of [N, key_seqlen]
     causality: If True, applies masking for future blinding
     dropout_rate: A floating point number of [0, 1].
-    training: boolean for controlling droput
     scope: Optional scope for `variable_scope`.
     '''
     with tf.compat.v1.variable_scope(scope, reuse=tf.compat.v1.AUTO_REUSE):
@@ -113,7 +113,7 @@ def scaled_dot_product_attention(Q, K, V, key_masks,
         # outputs = mask(outputs, Q, K, type="query")
 
         # dropout
-        outputs = tf.keras.layers.Dropout(rate=dropout_rate)(outputs)
+        outputs = tf.keras.layers.Dropout(rate=dropout_rate)(outputs, training=training)
 
         # weighted sum (context vectors)
         outputs = tf.matmul(outputs, V)  # (N, T_q, d_v)
@@ -204,7 +204,7 @@ def multihead_attention(queries, keys, values, key_masks,
         V_ = tf.concat(tf.split(V, num_heads, axis=2), axis=0)  # (h*N, T_k, d_model/h)
 
         # Attention
-        outputs = scaled_dot_product_attention(Q_, K_, V_, key_masks, causality, dropout_rate, training)
+        outputs = scaled_dot_product_attention(Q=Q_, K=K_, V=V_, key_masks=key_masks,causality=causality,dropout_rate=dropout_rate, training=training)
 
         # Restore shape
         outputs = tf.concat(tf.split(outputs, num_heads, axis=0), axis=2)  # (N, T_q, d_model)

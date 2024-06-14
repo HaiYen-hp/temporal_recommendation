@@ -19,7 +19,7 @@ import math
 from sklearn.utils import shuffle
 import model as M
 import time
-from generateNegatives import getNegativeSamples
+# from generateNegatives import getNegativeSamples
 from TimePreprocessor import timestamp_processor
 
 embedding_size = 32
@@ -57,7 +57,7 @@ te_dataset = timestamp_processor(te_dataset, userSortedTimestamp, sequence_lengt
 num_users = max(tr_dataset['user_id'])
 num_items = max(max(tr_dataset['item_id']), max(va_dataset['item_id']), max(te_dataset['item_id']))
 
-model = M.TimelyRec([6], num_users, num_items, embedding_size, sequence_length, width, depth, dropout=dropout_rate)
+model = M.TimelyRec(num_users, num_items, embedding_size, sequence_length, width, depth, dropout=dropout_rate)
 
 model.compile(loss='binary_crossentropy',
               optimizer=Adam(lr=learning_rate))
