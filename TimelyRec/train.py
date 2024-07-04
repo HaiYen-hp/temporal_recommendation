@@ -109,68 +109,68 @@ best_hr50 = 0
 best_ndcg50 = 0
 best_ndcg30 = 0
 best_hr10_i = 0
+with tf.device('/device:gpu:0'):
+    for epoch in range(n_epoch):
+        print ("Epoch " + str(epoch))
+        print ("Generating negative samples...")
+        t0 = time.time()
+        tr_neg_item_dataset, tr_neg_time_dataset, tr_neg_itemtime_dataset = get_negative_samples(tr_dataset, userUninteractedItems, userUninteractedTimes)
 
-for epoch in range(n_epoch):
-    print ("Epoch " + str(epoch))
-    print ("Generating negative samples...")
-    t0 = time.time()
-    tr_neg_item_dataset, tr_neg_time_dataset, tr_neg_itemtime_dataset = get_negative_samples(tr_dataset, userUninteractedItems, userUninteractedTimes)
+        tr_neg_time_dataset = tr_neg_time_dataset.drop(['year', 'month', 'date','hour', 'day_of_week'], axis=1)
+        for i in range(sequence_length):
+            tr_neg_time_dataset = tr_neg_time_dataset.drop(['month' + str(i), 'date' + str(i), 'hour' + str(i), 'day_of_week' + str(i), 'timestamp' + str(i), 'item_id' + str(i)], axis=1)
 
-    tr_neg_time_dataset = tr_neg_time_dataset.drop(['year', 'month', 'date','hour', 'day_of_week'], axis=1)
-    for i in range(sequence_length):
-        tr_neg_time_dataset = tr_neg_time_dataset.drop(['month' + str(i), 'date' + str(i), 'hour' + str(i), 'day_of_week' + str(i), 'timestamp' + str(i), 'item_id' + str(i)], axis=1)
+        tr_neg_itemtime_dataset = tr_neg_itemtime_dataset.drop(['year', 'month', 'date', 'hour', 'day_of_week'], axis=1)
+        for i in range(sequence_length):
+            tr_neg_itemtime_dataset = tr_neg_itemtime_dataset.drop(['month' + str(i), 'date' + str(i), 'hour' + str(i), 'day_of_week' + str(i), 'timestamp' + str(i), 'item_id' + str(i)], axis=1)
 
-    tr_neg_itemtime_dataset = tr_neg_itemtime_dataset.drop(['year', 'month', 'date', 'hour', 'day_of_week'], axis=1)
-    for i in range(sequence_length):
-        tr_neg_itemtime_dataset = tr_neg_itemtime_dataset.drop(['month' + str(i), 'date' + str(i), 'hour' + str(i), 'day_of_week' + str(i), 'timestamp' + str(i), 'item_id' + str(i)], axis=1)
-
-    tr_neg_time_dataset = timestamp_processor(tr_neg_time_dataset, userSortedTimestamp, sequence_length)
-    tr_neg_itemtime_dataset = timestamp_processor(tr_neg_itemtime_dataset, userSortedTimestamp, sequence_length)
-    tr_neg_dataset = pd.concat([tr_neg_item_dataset, tr_neg_time_dataset, tr_neg_itemtime_dataset])
-    
-    tr_posneg_dataset = shuffle(pd.concat([tr_dataset, tr_neg_dataset], join='inner', ignore_index=True), random_state=2024)
-    print ("Training...")
-    t1 = time.time()
-    # Train
-    for i in range(int(len(tr_posneg_dataset) / batch_size) + 1):
-        if (i + 1) * batch_size > len(tr_posneg_dataset):
-            tr_batch = tr_posneg_dataset.iloc[i * batch_size : ]
-        else:    
-            tr_batch = tr_posneg_dataset.iloc[i * batch_size : (i + 1) * batch_size]
-
-        user_input = tr_batch.user_id
-        item_input = tr_batch.item_id
+        tr_neg_time_dataset = timestamp_processor(tr_neg_time_dataset, userSortedTimestamp, sequence_length)
+        tr_neg_itemtime_dataset = timestamp_processor(tr_neg_itemtime_dataset, userSortedTimestamp, sequence_length)
+        tr_neg_dataset = pd.concat([tr_neg_item_dataset, tr_neg_time_dataset, tr_neg_itemtime_dataset])
         
-        recent_month_inputs = []
-        recent_day_inputs = []
-        recent_date_inputs = []
-        recent_hour_inputs = []
-        recent_timestamp_inputs = []
-        recent_itemid_inputs = []
+        tr_posneg_dataset = shuffle(pd.concat([tr_dataset, tr_neg_dataset], join='inner', ignore_index=True), random_state=2024)
+        print ("Training...")
+        t1 = time.time()
+        # Train
+        for i in range(int(len(tr_posneg_dataset) / batch_size) + 1):
+            if (i + 1) * batch_size > len(tr_posneg_dataset):
+                tr_batch = tr_posneg_dataset.iloc[i * batch_size : ]
+            else:    
+                tr_batch = tr_posneg_dataset.iloc[i * batch_size : (i + 1) * batch_size]
 
-        month_input = tr_batch.month
-        day_input = tr_batch.day_of_week
-        date_input = tr_batch.date
-        hour_input = tr_batch.hour
-        timestamp_input = tr_batch.timestamp
+            user_input = tr_batch.user_id
+            item_input = tr_batch.item_id
+            
+            recent_month_inputs = []
+            recent_day_inputs = []
+            recent_date_inputs = []
+            recent_hour_inputs = []
+            recent_timestamp_inputs = []
+            recent_itemid_inputs = []
 
-        for j in range(sequence_length):
-            recent_month_inputs.append(tr_batch['month' + str(j)])
-            recent_day_inputs.append(tr_batch['day_of_week' + str(j)])
-            recent_date_inputs.append(tr_batch['date' + str(j)])
-            recent_hour_inputs.append(tr_batch['hour' + str(j)])
-            recent_timestamp_inputs.append(tr_batch['timestamp' + str(j)])
-            recent_itemid_inputs.append(tr_batch['item_id' + str(j)])
+            month_input = tr_batch.month
+            day_input = tr_batch.day_of_week
+            date_input = tr_batch.date
+            hour_input = tr_batch.hour
+            timestamp_input = tr_batch.timestamp
 
-        labels = tr_batch.rating
-        
-        hist = model.fit([user_input, item_input, month_input, day_input, date_input, hour_input, timestamp_input] + [recent_month_inputs[j] for j in range(sequence_length)]+ [recent_day_inputs[j] for j in range(sequence_length)]+ [recent_date_inputs[j] for j in range(sequence_length)]+ [recent_hour_inputs[j] for j in range(sequence_length)]+ [recent_timestamp_inputs[j] for j in range(sequence_length)] + [recent_itemid_inputs[j] for j in range(sequence_length)], labels,
-                batch_size=len(tr_batch), epochs=1, verbose=0, shuffle=False)
+            for j in range(sequence_length):
+                recent_month_inputs.append(tr_batch['month' + str(j)])
+                recent_day_inputs.append(tr_batch['day_of_week' + str(j)])
+                recent_date_inputs.append(tr_batch['date' + str(j)])
+                recent_hour_inputs.append(tr_batch['hour' + str(j)])
+                recent_timestamp_inputs.append(tr_batch['timestamp' + str(j)])
+                recent_itemid_inputs.append(tr_batch['item_id' + str(j)])
 
-    print ("Training time: " + str(round(time.time() - t1, 1)))
+            labels = tr_batch.rating
+            
+            hist = model.fit([user_input, item_input, month_input, day_input, date_input, hour_input, timestamp_input] + [recent_month_inputs[j] for j in range(sequence_length)]+ [recent_day_inputs[j] for j in range(sequence_length)]+ [recent_date_inputs[j] for j in range(sequence_length)]+ [recent_hour_inputs[j] for j in range(sequence_length)]+ [recent_timestamp_inputs[j] for j in range(sequence_length)] + [recent_itemid_inputs[j] for j in range(sequence_length)], labels,
+                    batch_size=len(tr_batch), epochs=1, verbose=0, shuffle=False)
 
-    print('Iteration %d: loss = %.4f' 
-        % (epoch, hist.history['loss'][0]))
+        print ("Training time: " + str(round(time.time() - t1, 1)))
+
+        print('Iteration %d: loss = %.4f' 
+            % (epoch, hist.history['loss'][0]))
     
     print ("Evaluating...")
     t2 = time.time()
