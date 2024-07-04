@@ -52,7 +52,7 @@ def evaluate(model, va_dataset, num_candidates, sequence_length):
             else:
                 metric_Ks[f'ndcg{k}'] = 0
             
-
+        HR30 += metric_Ks['hit30']
         HR50 += metric_Ks['hit50']
         NDCG30 += metric_Ks['ndcg30']
         NDCG50 += metric_Ks['ndcg50']

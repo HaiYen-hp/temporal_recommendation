@@ -22,6 +22,6 @@ else
     echo "Directory $LOGDIR already exists."
 fi
 
-python train.py --train_dir movielens --lr=0.0026 --embedding_size=64 --dropout_rate=0.15 --num_epochs 10 2>&1 | while IFS= read -r line; do
+CUDA_VISIBLE_DEVICES=1,2 python train.py --train_dir movielens --lr=0.0026 --embedding_size=64 --dropout_rate=0.15 --num_epochs 5 2>&1 | while IFS= read -r line; do
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $line"
 done | tee -a "$LOGFILE"
