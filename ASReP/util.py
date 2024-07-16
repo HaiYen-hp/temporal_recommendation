@@ -7,7 +7,7 @@ import time
 import os
 from collections import defaultdict
 from tqdm import tqdm
-
+from outer_config import FIX_PATH
 from metrics import precision_at_k, recall, ndcg_at_k, hit_at_k, auc, mrr
 from sklearn.preprocessing import MinMaxScaler
 from collections import defaultdict
@@ -75,16 +75,16 @@ def augdata_load(aug_filename):
 
 
 
-def data_load(data_name, args):
-    reverseornot = args.reversed == 1
+def data_load(data_name, args, args_sys):
+    reverseornot = args_sys.reversed == 1
     if not reverseornot:
-        train_file = f"./data/{data_name}/train.txt"
-        valid_file = f"./data/{data_name}/valid.txt"
-        test_file = f"./data/{data_name}/test.txt"
+        train_file = os.path.join(FIX_PATH, f"data/{data_name}/train.txt")
+        valid_file = os.path.join(FIX_PATH,f"data/{data_name}/valid.txt")
+        test_file = os.path.join(FIX_PATH,f"data/{data_name}/test.txt")
     else:
-        train_file = f"./data/{data_name}/train_reverse.txt"
-        valid_file = f"./data/{data_name}/valid_reverse.txt"
-        test_file = f"./data/{data_name}/test_reverse.txt"
+        train_file = os.path.join(FIX_PATH,f"data/{data_name}/train_reverse.txt")
+        valid_file = os.path.join(FIX_PATH,f"data/{data_name}/valid_reverse.txt")
+        test_file = os.path.join(FIX_PATH,f"data/{data_name}/test_reverse.txt")
 
     original_train = None
     augdata = None
@@ -93,12 +93,12 @@ def data_load(data_name, args):
         for substr in data_name.split('_')[:-1]:
             original_dataname += substr + '_'
         original_dataname = original_dataname[:-1]
-        original_train_file = f"./data/{original_dataname}/train.txt"
+        original_train_file = os.path.join(FIX_PATH,f"data/{original_dataname}/train.txt")
         original_train, _, _ = load_file_and_sort(original_train_file)
-    if args.aug_traindata > 0:
-        original_train_file = f"./data/{data_name}/train.txt"
+    if args_sys.aug_traindata > 0:
+        original_train_file = os.path.join(FIX_PATH,f"data/{data_name}/train.txt")
         original_train, _, _ = load_file_and_sort(original_train_file)
-        aug_data_signature = './aug_data/{}/lr_{}_maxlen_{}_hsize_{}_nblocks_{}_drate_{}_l2_{}_nheads_{}_gen_num_'.format(args.dataset, args.lr, args.maxlen, args.hidden_units, args.num_blocks, args.dropout_rate, args.l2_emb, args.num_heads)
+        aug_data_signature = os.path.join(FIX_PATH,'aug_data/{}/lr_{}_maxlen_{}_hsize_{}_nblocks_{}_drate_{}_l2_{}_nheads_{}_gen_num_'.format(args_sys.dataset, args.lr, args.maxlen, args.hidden_units, args.num_blocks, args.dropout_rate, args.l2_emb, args.num_heads))
         gen_num_max = 20
         M_20_filename='_M_20.txt'
         if os.path.exists(aug_data_signature + str(gen_num_max) + M_20_filename):
@@ -108,8 +108,8 @@ def data_load(data_name, args):
             gen_num_max = 10
             augdata = augdata_load(aug_data_signature + str(gen_num_max) + M_20_filename)
 
-    if args.aug_traindata > 0:
-        user_train, train_usernum, train_itemnum = load_file_and_sort(train_file, reverse=reverseornot, augdata=augdata, aug_num=args.aug_traindata, M=args.M)
+    if args_sys.aug_traindata > 0:
+        user_train, train_usernum, train_itemnum = load_file_and_sort(train_file, reverse=reverseornot, augdata=augdata, aug_num=args_sys.aug_traindata, M=args_sys.M)
     else:
         user_train, train_usernum, train_itemnum = load_file_and_sort(train_file, reverse=reverseornot)
     user_valid, valid_usernum, valid_itemnum = load_file_and_sort(valid_file, reverse=reverseornot)
@@ -123,7 +123,7 @@ def data_load(data_name, args):
     return [user_train, user_valid, user_test, original_train, usernum, itemnum]
 
 
-def data_augment(model, dataset, args, sess, gen_num):
+def data_augment(model, dataset, args, args_sys, sess, gen_num):
 
     print("Data augment")
     [train, valid, test, original_train, usernum, itemnum] = copy.deepcopy(dataset)
@@ -133,7 +133,7 @@ def data_augment(model, dataset, args, sess, gen_num):
 
     augment_users_data = {u_ind: {'u_data':train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, []), 'u':u} \
                            for u_ind, u in enumerate(all_users) if len(train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, [])) != 0 \
-                              or len(train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, [])) < args.M}
+                              or len(train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, [])) < args_sys.M}
     for num_ind in range(gen_num):
         
         batch_seq = []
@@ -216,7 +216,7 @@ def rank_corrected(r, m, n):
     assert np.sum(corrected_r) <= 1
     return corrected_r
 
-def create_seq(train, valid, itemnum, u_i_list, args, testorvalid):
+def create_seq(train, valid, itemnum, u_i_list, args, args_sys, testorvalid):
     rated = set(train[u_i_list["u"]])
     rated.add(0)
     seq = np.zeros([args.maxlen], dtype=np.int32)
@@ -232,17 +232,17 @@ def create_seq(train, valid, itemnum, u_i_list, args, testorvalid):
     for i,_idx in zip(train[u_i_list["u"]], range(0,idx)):
         seq[_idx] = i
     item_idx = [u_i_list["i_list"][0]]
-    if args.evalnegsample == -1:
+    if args_sys.evalnegsample == -1:
         item_idx += list(set([i for i in range(1, itemnum+1)]) - rated - set([u_i_list["i_list"][0]]))
     else:
         item_candiates = list(set([i for i in range(1, itemnum+1)]) - rated - set([u_i_list["i_list"][0]]))
-        if args.evalnegsample >= len(item_candiates):
+        if args_sys.evalnegsample >= len(item_candiates):
             item_idx += item_candiates
         else:
-            item_idx += list(np.random.choice(item_candiates, size=args.evalnegsample, replace=False))
+            item_idx += list(np.random.choice(item_candiates, size=args_sys.evalnegsample, replace=False))
     return seq, item_idx
 
-def predict_eval(model, dataset, args, sess, testorvalid):
+def predict_eval(model, dataset, args, args_sys, sess, testorvalid):
     [train, valid, test, original_train, usernum, itemnum] = copy.deepcopy(dataset)
 
     if testorvalid == "test":
@@ -263,7 +263,7 @@ def predict_eval(model, dataset, args, sess, testorvalid):
 
     for u_ind, u_i_list in tqdm(aug_eval_data.items(), total=len(aug_eval_data)):
 
-        seq, item_idx = create_seq(train, valid, itemnum, u_i_list, args, testorvalid)
+        seq, item_idx = create_seq(train, valid, itemnum, u_i_list, args, args_sys, testorvalid)
 
         batch_seq.append(seq)
         batch_item_idx.append(item_idx)
@@ -280,12 +280,13 @@ def predict_eval(model, dataset, args, sess, testorvalid):
             batch_item_idx = []
             batch_u = []
 
-    if 'aug' in args.dataset or 'itemco' in args.dataset or args.aug_traindata > 0:
+    if 'aug' in args_sys.dataset or 'itemco' in args_sys.dataset or args_sys.aug_traindata > 0:
         real_train = original_train
     else:
         real_train = train
 
     return all_predictions_results, all_item_idx, all_u, eval_data, real_train
+
 
 def conditions_(real_train, all_u, ind, seq_dicts, sorted_ind, scale_pred, test_item_idx):
 
@@ -339,8 +340,8 @@ def evalute_seq(all_predictions_results, all_item_idx, all_u, real_train):
                 'medium7_seq_rankeditems_list':[], 'medium7_seq_test_indices':[], 'medium7_seq_scale_pred_list':[], 'medium7_seq_test_allitems':[], \
                 'long_seq_rankeditems_list':[], 'long_seq_test_indices':[], 'long_seq_scale_pred_list':[], 'long_seq_test_allitems':[]}
     
-    rankeditemid_list = []
-    rankeditemid_scores = []
+    # rankeditemid_list = []
+    # rankeditemid_scores = []
 
     all_predictions_results_output = []
 
@@ -452,7 +453,7 @@ def evaluate(rankeditems_list, test_indices, scale_pred_list, test_allitems, seq
     results["auc"] /= len(eval_data)
     results["mrr"] /= len(eval_data)
     print(f"testing #of users: {len(eval_data)}")
-
+    
     short_seq_batch_data = zip(seq_dicts['short_seq_rankeditems_list'], seq_dicts['short_seq_test_indices'], seq_dicts['short_seq_scale_pred_list'], seq_dicts['short_seq_test_allitems'])
     short_seq_batch_result = pool.map(eval_one_interaction, short_seq_batch_data)
     for re in short_seq_batch_result:
