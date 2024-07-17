@@ -1,4 +1,4 @@
-import sys
+import traceback, sys
 import copy
 import random
 import multiprocessing
@@ -122,18 +122,50 @@ def data_load(data_name, args, args_sys):
 
     return [user_train, user_valid, user_test, original_train, usernum, itemnum]
 
+def gen_data(cumulative_preds, model, sess, u_data, u_ind, itemnum, all_users, batch_seq, batch_u, batch_item_idx, args):
+    seq = np.zeros([args.maxlen], dtype=np.int32)
+
+    idx = args.maxlen
+    for i, _idx in zip(u_data['u_data'], range(0,idx)):
+        seq[_idx] = i
+    rated = set(u_data['u_data'])
+    item_idx = list(set([i for i in range(itemnum)]) - rated)
+
+    batch_seq.append(seq)
+    batch_item_idx.append(item_idx)
+    batch_u.append(u_data['u'])
+
+    if (u_ind + 1) % int(args.batch_size / 16) == 0 or u_ind + 1 == len(all_users):
+        predictions = model.predict(sess, batch_u, batch_seq)
+        for batch_ind in range(len(batch_item_idx)):
+            test_item_idx = batch_item_idx[batch_ind]
+            test_predictions = predictions[batch_ind][test_item_idx]
+
+            ranked_items_ind = list((-1*np.array(test_predictions)).argsort())
+            rankeditem_oneuserids = [int(test_item_idx[i]) for i in ranked_items_ind]
+
+            u_batch_ind = batch_u[batch_ind]
+            cumulative_preds[u_batch_ind].append(rankeditem_oneuserids[0])
+
+        batch_seq = []
+        batch_item_idx = []
+        batch_u = []
+
 
 def data_augment(model, dataset, args, args_sys, sess, gen_num):
 
     print("Data augment")
+    manager = multiprocessing.Manager()
     [train, valid, test, original_train, usernum, itemnum] = copy.deepcopy(dataset)
     all_users = list(train.keys())
 
-    cumulative_preds = defaultdict(list)
+    # cumulative_preds = defaultdict(list)
+    shared_dict = manager.dict(defaultdict(list))
+    processes = []
 
     augment_users_data = {u_ind: {'u_data':train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, []), 'u':u} \
-                           for u_ind, u in enumerate(all_users) if len(train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, [])) != 0 \
-                              or len(train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, [])) < args_sys.M}
+                        for u_ind, u in enumerate(all_users) if len(train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, [])) != 0 \
+                            or len(train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, [])) < args_sys.M}
     for num_ind in range(gen_num):
         
         batch_seq = []
@@ -141,36 +173,19 @@ def data_augment(model, dataset, args, args_sys, sess, gen_num):
         batch_item_idx = []
 
         for u_ind, u_data in tqdm(augment_users_data.items(), total=len(augment_users_data)):
+            p = multiprocessing.Process(target=gen_data, \
+                                        args=(shared_dict, model, sess, u_data, u_ind,\
+                                               itemnum, all_users, batch_seq, batch_u, batch_item_idx, args))
+            processes.append(p)
+            p.start()
 
-            seq = np.zeros([args.maxlen], dtype=np.int32)
-
-            idx = args.maxlen
-            for i, _idx in zip(u_data['u_data'], range(0,idx)):
-                seq[_idx] = i
-            rated = set(u_data['u_data'])
-            item_idx = list(set([i for i in range(itemnum)]) - rated)
-
-            batch_seq.append(seq)
-            batch_item_idx.append(item_idx)
-            batch_u.append(u_data['u'])
-
-            if (u_ind + 1) % int(args.batch_size / 16) == 0 or u_ind + 1 == len(all_users):
-                predictions = model.predict(sess, batch_u, batch_seq)
-                for batch_ind in range(len(batch_item_idx)):
-                    test_item_idx = batch_item_idx[batch_ind]
-                    test_predictions = predictions[batch_ind][test_item_idx]
+        for p in processes:
+            p.join()
+        
+    cumulative_preds = {k: list(v) for k, v in shared_dict.items()}
     
-                    ranked_items_ind = list((-1*np.array(test_predictions)).argsort())
-                    rankeditem_oneuserids = [int(test_item_idx[i]) for i in ranked_items_ind]
-
-                    u_batch_ind = batch_u[batch_ind]
-                    cumulative_preds[u_batch_ind].append(rankeditem_oneuserids[0])
-
-                batch_seq = []
-                batch_item_idx = []
-                batch_u = []
-
     return cumulative_preds
+
 
 
 

@@ -113,7 +113,7 @@ def  train_and_evaluate(model, dataset, user_train, sampler, args, args_sys):
     T = 0.0
     t0 = time.time()
     try:
-        best_recall=0
+        best_recall=np.zeros(3)
         for epoch in range(1, args.num_epochs + 1):
 
             for step in range(num_batch):
@@ -174,20 +174,22 @@ def  train_and_evaluate(model, dataset, user_train, sampler, args, args_sys):
                                 limit=2, file=sys.stdout)
         sampler.close()
         exit(1)
-    if args_sys.reversed == 1 and t_test['recall'] > best_recall:
-        best_recall=t_test.recall
-        augmented_data = data_augment(model, dataset, args_sys, sess, args_sys.reversed_gen_number)
+    print(f"Previous best recall: {best_recall}")
+    print(f"Recall: {t_test['recall']}")
+    if args_sys.reversed == 1 and any(np.greater(t_test['recall'], best_recall)):
+        best_recall=t_test['recall']
+        augmented_data = data_augment(model, dataset, args, args_sys, sess, args_sys.reversed_gen_number)
         with open(aug_data_signature+'.txt', 'w') as f:
             for u, aug_ilist in augmented_data.items():
                 for ind, aug_i in enumerate(aug_ilist):
                     f.write(str(u-1) + '\t' + str(aug_i - 1) + '\t' + str(-(ind+1)) + '\n')
         if args_sys.reversed_gen_number > 0:
             parent_path_re_model = os.path.join(FIX_PATH,'reversed_models')
-            if not os.path.exists(parent_path_re_model+'/'+args.dataset+sub_reversed_folder+'/'):
-                os.makedirs(parent_path_re_model+'/'+args.dataset+sub_reversed_folder+'/')
-            saver.save(sess, parent_path_re_model+'/'+args.dataset+sub_reversed_folder+'/'+model_signature+'.ckpt')
+            if not os.path.exists(parent_path_re_model+'/'+args_sys.dataset+sub_reversed_folder+'/'):
+                os.makedirs(parent_path_re_model+'/'+args_sys.dataset+sub_reversed_folder+'/')
+            saver.save(sess, parent_path_re_model+'/'+args_sys.dataset+sub_reversed_folder+'/'+model_signature+'.ckpt')
     sampler.close()
-    return best_recall
+    return best_recall.max()
     
 
 if __name__ == '__main__':
