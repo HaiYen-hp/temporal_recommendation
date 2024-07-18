@@ -160,7 +160,7 @@ def data_augment(model, dataset, args, args_sys, sess, gen_num):
     all_users = list(train.keys())
 
     # cumulative_preds = defaultdict(list)
-    shared_dict = manager.dict(defaultdict(list))
+    cumulative_preds = manager.dict(defaultdict(list))
     processes = []
 
     augment_users_data = {u_ind: {'u_data':train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, []), 'u':u} \
@@ -174,7 +174,7 @@ def data_augment(model, dataset, args, args_sys, sess, gen_num):
 
         for u_ind, u_data in tqdm(augment_users_data.items(), total=len(augment_users_data)):
             p = multiprocessing.Process(target=gen_data, \
-                                        args=(shared_dict, model, sess, u_data, u_ind,\
+                                        args=(cumulative_preds, model, sess, u_data, u_ind,\
                                                itemnum, all_users, batch_seq, batch_u, batch_item_idx, args))
             processes.append(p)
             p.start()
@@ -182,9 +182,9 @@ def data_augment(model, dataset, args, args_sys, sess, gen_num):
         for p in processes:
             p.join()
         
-    cumulative_preds = {k: list(v) for k, v in shared_dict.items()}
+    cumulative_preds_final = {k: list(v) for k, v in cumulative_preds.items()}
     
-    return cumulative_preds
+    return cumulative_preds_final
 
 
 
