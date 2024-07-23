@@ -98,15 +98,11 @@ def data_load(data_name, args, args_sys):
     if args_sys.aug_traindata > 0:
         original_train_file = os.path.join(FIX_PATH,f"data/{data_name}/train.txt")
         original_train, _, _ = load_file_and_sort(original_train_file)
-        aug_data_signature = os.path.join(FIX_PATH,'aug_data/{}/lr_{}_maxlen_{}_hsize_{}_nblocks_{}_drate_{}_l2_{}_nheads_{}_gen_num_'.format(args_sys.dataset, args.lr, args.maxlen, args.hidden_units, args.num_blocks, args.dropout_rate, args.l2_emb, args.num_heads))
-        gen_num_max = 20
-        M_20_filename='_M_20.txt'
-        if os.path.exists(aug_data_signature + str(gen_num_max) + M_20_filename):
-            augdata = augdata_load(aug_data_signature + str(gen_num_max) + M_20_filename)
-            print('load ', aug_data_signature + str(gen_num_max) + M_20_filename)
-        else:
-            gen_num_max = 10
-            augdata = augdata_load(aug_data_signature + str(gen_num_max) + M_20_filename)
+        aug_data_signature = os.path.join(FIX_PATH,'aug_data/{}/lr_{}_maxlen_{}_hsize_{}_nblocks_{}_drate_{}_l2_{}_nheads_{}_gen_num_{}_M_{}'.format(args_sys.dataset, args.lr, args.maxlen, args.hidden_units, args.num_blocks, args.dropout_rate, args.l2_emb, args.num_heads, args_sys.reversed_gen_number, args_sys.M))
+
+        if os.path.exists(aug_data_signature):
+            augdata = augdata_load(aug_data_signature)
+            print('load ', aug_data_signature)
 
     if args_sys.aug_traindata > 0:
         user_train, train_usernum, train_itemnum = load_file_and_sort(train_file, reverse=reverseornot, augdata=augdata, aug_num=args_sys.aug_traindata, M=args_sys.M)
@@ -151,6 +147,11 @@ def gen_data(cumulative_preds, model, sess, u_data, u_ind, itemnum, all_users, b
         batch_item_idx = []
         batch_u = []
 
+def gen_data_wrapper(semaphore, cumulative_preds, model, sess, u_data, u_ind, itemnum, all_users, batch_seq, batch_u, batch_item_idx, args):
+    try:
+        gen_data(cumulative_preds, model, sess, u_data, u_ind, itemnum, all_users, batch_seq, batch_u, batch_item_idx, args)
+    finally:
+        semaphore.release()
 
 def data_augment(model, dataset, args, args_sys, sess, gen_num):
 
@@ -159,22 +160,24 @@ def data_augment(model, dataset, args, args_sys, sess, gen_num):
     [train, valid, test, original_train, usernum, itemnum] = copy.deepcopy(dataset)
     all_users = list(train.keys())
 
-    # cumulative_preds = defaultdict(list)
     cumulative_preds = manager.dict(defaultdict(list))
     processes = []
 
     augment_users_data = {u_ind: {'u_data':train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, []), 'u':u} \
                         for u_ind, u in enumerate(all_users) if len(train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, [])) != 0 \
                             or len(train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, [])) < args_sys.M}
+    
+    semaphore = multiprocessing.Semaphore(6)
+
     for num_ind in range(gen_num):
         
         batch_seq = []
         batch_u = []
         batch_item_idx = []
 
-        for u_ind, u_data in tqdm(augment_users_data.items(), total=len(augment_users_data)):
-            p = multiprocessing.Process(target=gen_data, \
-                                        args=(cumulative_preds, model, sess, u_data, u_ind,\
+        for u_ind, u_data in augment_users_data.items():
+            p = multiprocessing.Process(target=gen_data_wrapper, \
+                                        args=(semaphore, cumulative_preds, model, sess, u_data, u_ind,\
                                                itemnum, all_users, batch_seq, batch_u, batch_item_idx, args))
             processes.append(p)
             p.start()
@@ -581,4 +584,5 @@ def evaluate(rankeditems_list, test_indices, scale_pred_list, test_allitems, seq
 
     pool.close()
     pool.join()
+
     return results, short_seq_results, short7_seq_results, short37_seq_results, medium3_seq_results, medium7_seq_results, long_seq_results, all_predictions_results_output
