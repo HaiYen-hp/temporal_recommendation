@@ -240,16 +240,17 @@ if __name__ == '__main__':
         # Get the best hyperparameters
         best_trial = study.best_trial
         best_hps = best_trial.params
-        print("Best RECALL: ", -best_trial)
+        print("Best RECALL: ", -best_trial.value)
         print("Best parameters: ", best_hps)
         # Save the best parameters to a dictionary
         json_best_hps = json.dumps(best_hps, indent=4)
 
         # Save the dictionary to a text file
-        os.mkdir(os.path.join(FIX_PATH,'best_params.txt'))
+        os.makedirs(os.path.join(FIX_PATH,'best_params.txt'), exist_ok = True)
         with open(os.path.join(FIX_PATH,'best_params.txt'), 'w') as f:
-            json.dump(json_best_hps, f)
-        print("Best parameters saved to best_params.txt")
+            for param, value in best_hps.items():
+                f.write(f"{param}: {value}\n")
+        print("Best parameters saved to {}".format(os.path.join(FIX_PATH,'best_params.txt')))
         end = time.time() - start
         print("Execution time for hyperparamter tuning: %s", time.strftime("%H:%M:%S", time.gmtime(end)))
     except ConnectionRefusedError as e:
