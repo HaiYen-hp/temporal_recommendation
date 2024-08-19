@@ -1,4 +1,6 @@
 import os
+import sys
+sys.path.append("/home/yenlh/temporal_recommendation/ASReP")
 import time
 import argparse
 import tensorflow as tf
@@ -26,9 +28,8 @@ def str2bool(s):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', required=True)
-parser.add_argument('--gpus', default="0")
-parser.add_argument('--train_dir', default="0",required=True)
+parser.add_argument('--dataset', default="Beauty")
+parser.add_argument('--train_dir', default="0")
 parser.add_argument('--evalnegsample', default=-1, type=int)
 parser.add_argument('--reversed', default=0, type=int)
 parser.add_argument('--reversed_gen_number', default=-1, type=int)
@@ -38,15 +39,15 @@ parser.add_argument('--aug_traindata', default=-1, type=int)
 
 if __name__ == '__main__':
     args_sys = parser.parse_args()
-    with open('best_params.txt', 'r') as f:
+    with open(os.path.join(FIX_PATH,'best_params.txt'), 'r') as f:
         args = json.load(f)
-    os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-    os.environ["CUDA_VISIBLE_DEVICES"] = args_sys.gpus
-
     print("List GPU devices used")
     print(device_lib.list_local_devices())
-
+    start = time.time()
     dataset = data_load(args_sys.dataset, args, args_sys)
+    end = time.time() - start
+    print("Execution time for training and evaluate: %s", time.strftime("%H:%M:%S", time.gmtime(end)))
+
     [user_train, user_valid, user_test, original_train, usernum, itemnum] = dataset
     num_batch = int(len(user_train) / args.batch_size)
     cc = []
@@ -91,7 +92,7 @@ if __name__ == '__main__':
         for epoch in range(1, args.num_epochs + 1):
 
             #print(num_batch)
-            for step in tqdm(range(num_batch)):#tqdm(range(num_batch), total=num_batch, ncols=70, leave=False, unit='b'):
+            for step in range(num_batch):#tqdm(range(num_batch), total=num_batch, ncols=70, leave=False, unit='b'):
             #for step in tqdm(range(num_batch), total=num_batch, ncols=70, leave=False, unit='b'):
                 u, seq, pos, neg = sampler.next_batch()
                 auc, loss, _ = sess.run([model.auc, model.loss, model.train_op],

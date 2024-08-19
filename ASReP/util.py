@@ -5,17 +5,68 @@ import multiprocessing
 import numpy as np
 import time
 import os
+import pickle
+from pyspark.sql import SparkSession
 from collections import defaultdict
 from tqdm import tqdm
 from outer_config import FIX_PATH
 from metrics import precision_at_k, recall, ndcg_at_k, hit_at_k, auc, mrr
 from sklearn.preprocessing import MinMaxScaler
 from collections import defaultdict
-from tqdm import tqdm
 import copy
+import psutil
 
 Ks = [10, 30, 50]
-cores = multiprocessing.cpu_count() // 4
+cores = 16
+
+def check_available_memory(num_cores:int, required_executor_memory:int, required_driver_memory:int):
+    # Get the number of physical cores
+    physical_cores = psutil.cpu_count(logical=False)
+    # Get the number of logical cores (including hyperthreading)
+    logical_cores = psutil.cpu_count(logical=True)
+    
+    memory_info = psutil.virtual_memory()
+    total_memory_gb = memory_info.total / (1024 ** 3)
+    available_memory_gb = memory_info.available / (1024 ** 3)
+    used_memory_gb = memory_info.used / (1024 ** 3)
+    free_memory_gb = memory_info.free / (1024 ** 3)
+    
+    print(f"Physical cores: {physical_cores}")
+    print(f"Logical cores: {logical_cores}")
+    print(f"Total memory: {total_memory_gb:.2f} GB")
+    print(f"Available memory: {available_memory_gb:.2f} GB")
+    print(f"Used memory: {used_memory_gb:.2f} GB")
+    print(f"Free memory: {free_memory_gb:.2f} GB")
+    
+    if available_memory_gb * 0.75 < required_executor_memory + required_driver_memory:
+        raise Exception(f"Error: Not enough memory available to set up spark session with {available_memory_gb} left")
+    elif num_cores >= logical_cores:
+        raise Exception(f"Error: Requested number of cores ({num_cores}) exceeds available logical cores ({logical_cores}).")
+    else:
+        print(f"Enough memory available to set up spark session and spark session created with {num_cores} cores.")
+
+def create_spark_session(max_num_core:int, spark_executor_memory:int, spark_driver_memory:int, offHeap_size:int) -> SparkSession:
+    # Set up PySpark session
+    spark = SparkSession.builder \
+        .master("local[*]") \
+        .appName("HyperparameterTuning") \
+        .config("spark.executor.memory", f"{spark_executor_memory}g") \
+        .config("spark.driver.memory", f"{spark_driver_memory}g") \
+        .config('spark.cores.max', f"{max_num_core}") \
+        .config("spark.memory.offHeap.enabled", "true") \
+        .config("spark.memory.offHeap.size", f"{offHeap_size}g") \
+        .config("spark.sql.debug.maxToStringFields", "160") \
+        .config("spark.executor.heartbeatInterval", "60s") \
+        .config("spark.network.timeout", "600s") \
+        .config("spark.executor.extraJavaOptions", "-XX:+UseG1GC -XX:InitiatingHeapOccupancyPercent=16 -XX:ConcGCThreads=6 -XX:ParallelGCThreads=6") \
+        .config("spark.driver.extraJavaOptions", "-XX:+UseG1GC -XX:InitiatingHeapOccupancyPercent=16 -XX:ConcGCThreads=6 -XX:ParallelGCThreads=6") \
+        .config("spark.memory.fraction", "0.8") \
+        .config("spark.memory.storageFraction", "0.3") \
+        .config("spark.driver.extraJavaOptions", "-Dlog4j.configuration=log4j.properties") \
+        .config("spark.executor.extraJavaOptions", "-Dlog4j.configuration=log4j.properties") \
+        .config("spark.local.dir", "/home/yenlh/temporal_recommendation/temp") \
+        .getOrCreate()
+    return spark
 
 def load_file_and_sort(filename, reverse=False, augdata=None, aug_num=0, M=10):
     data = defaultdict(list)
@@ -24,7 +75,7 @@ def load_file_and_sort(filename, reverse=False, augdata=None, aug_num=0, M=10):
     print("Load file and sort")
 
     with open(filename, 'r') as f:
-        for i, line in enumerate(tqdm(f)):
+        for i, line in enumerate(f):
             one_interaction = line.rstrip().split("\t")
             uind = int(one_interaction[0]) + 1
             iind = int(one_interaction[1]) + 1
@@ -64,7 +115,7 @@ def augdata_load(aug_filename):
 
     augdata = defaultdict(list)
     with open(aug_filename, 'r') as f:
-        for i, line in enumerate(tqdm(f)):
+        for i, line in enumerate(f):
             one_interaction = line.rstrip().split("\t")
             uind = int(one_interaction[0]) + 1
             iind = int(one_interaction[1]) + 1
@@ -73,124 +124,106 @@ def augdata_load(aug_filename):
 
     return augdata
 
-
-
 def data_load(data_name, args, args_sys):
-    reverseornot = args_sys.reversed == 1
-    if not reverseornot:
-        train_file = os.path.join(FIX_PATH, f"data/{data_name}/train.txt")
-        valid_file = os.path.join(FIX_PATH,f"data/{data_name}/valid.txt")
-        test_file = os.path.join(FIX_PATH,f"data/{data_name}/test.txt")
-    else:
-        train_file = os.path.join(FIX_PATH,f"data/{data_name}/train_reverse.txt")
-        valid_file = os.path.join(FIX_PATH,f"data/{data_name}/valid_reverse.txt")
-        test_file = os.path.join(FIX_PATH,f"data/{data_name}/test_reverse.txt")
+    try:
+        reverseornot = args_sys.reversed == 1
+        if not reverseornot:
+            train_file = os.path.join(FIX_PATH, f"data/{data_name}/train.txt")
+            valid_file = os.path.join(FIX_PATH,f"data/{data_name}/valid.txt")
+            test_file = os.path.join(FIX_PATH,f"data/{data_name}/test.txt")
+        else:
+            train_file = os.path.join(FIX_PATH,f"data/{data_name}/train_reverse.txt")
+            valid_file = os.path.join(FIX_PATH,f"data/{data_name}/valid_reverse.txt")
+            test_file = os.path.join(FIX_PATH,f"data/{data_name}/test_reverse.txt")
 
-    original_train = None
-    augdata = None
-    if 'aug' in data_name or 'itemcor' in data_name:
-        original_dataname = ''
-        for substr in data_name.split('_')[:-1]:
-            original_dataname += substr + '_'
-        original_dataname = original_dataname[:-1]
-        original_train_file = os.path.join(FIX_PATH,f"data/{original_dataname}/train.txt")
-        original_train, _, _ = load_file_and_sort(original_train_file)
-    if args_sys.aug_traindata > 0:
-        original_train_file = os.path.join(FIX_PATH,f"data/{data_name}/train.txt")
-        original_train, _, _ = load_file_and_sort(original_train_file)
-        aug_data_signature = os.path.join(FIX_PATH,'aug_data/{}/lr_{}_maxlen_{}_hsize_{}_nblocks_{}_drate_{}_l2_{}_nheads_{}_gen_num_{}_M_{}'.format(args_sys.dataset, args.lr, args.maxlen, args.hidden_units, args.num_blocks, args.dropout_rate, args.l2_emb, args.num_heads, args_sys.reversed_gen_number, args_sys.M))
+        original_train = None
+        augdata = None
+        if 'aug' in data_name or 'itemcor' in data_name:
+            original_dataname = ''
+            for substr in data_name.split('_')[:-1]:
+                original_dataname += substr + '_'
+            original_dataname = original_dataname[:-1]
+            original_train_file = os.path.join(FIX_PATH,f"data/{original_dataname}/train.txt")
+            original_train, _, _ = load_file_and_sort(original_train_file)
+        if args_sys.aug_traindata > 0:
+            original_train_file = os.path.join(FIX_PATH,f"data/{data_name}/train.txt")
+            original_train, _, _ = load_file_and_sort(original_train_file)
+            aug_data_signature = os.path.join(FIX_PATH,'aug_data/{}/lr_{}_maxlen_{}_hsize_{}_nblocks_{}_drate_{}_l2_{}_nheads_{}_gen_num_{}_M_{}'.format(args_sys.dataset, args['lr'], args['maxlen'], args['hidden_units'], args['num_blocks'], args['dropout_rate'], args['l2_emb'], args['num_heads'], args_sys.reversed_gen_number, args_sys.M))
 
-        if os.path.exists(aug_data_signature):
-            augdata = augdata_load(aug_data_signature)
-            print('load ', aug_data_signature)
+            if os.path.exists(aug_data_signature):
+                augdata = augdata_load(aug_data_signature)
+                print('load ', aug_data_signature)
 
-    if args_sys.aug_traindata > 0:
-        user_train, train_usernum, train_itemnum = load_file_and_sort(train_file, reverse=reverseornot, augdata=augdata, aug_num=args_sys.aug_traindata, M=args_sys.M)
-    else:
-        user_train, train_usernum, train_itemnum = load_file_and_sort(train_file, reverse=reverseornot)
-    user_valid, valid_usernum, valid_itemnum = load_file_and_sort(valid_file, reverse=reverseornot)
-    user_test, test_usernum, test_itemnum = load_file_and_sort(test_file, reverse=reverseornot)
+        if args_sys.aug_traindata > 0:
+            user_train, train_usernum, train_itemnum = load_file_and_sort(train_file, reverse=reverseornot, augdata=augdata, aug_num=args_sys.aug_traindata, M=args_sys.M)
+        else:
+            user_train, train_usernum, train_itemnum = load_file_and_sort(train_file, reverse=reverseornot)
+        user_valid, valid_usernum, valid_itemnum = load_file_and_sort(valid_file, reverse=reverseornot)
+        user_test, test_usernum, test_itemnum = load_file_and_sort(test_file, reverse=reverseornot)
 
-    usernum = max([train_usernum, valid_usernum, test_usernum])
-    itemnum = max([train_itemnum, valid_itemnum, test_itemnum])
+        usernum = max([train_usernum, valid_usernum, test_usernum])
+        itemnum = max([train_itemnum, valid_itemnum, test_itemnum])
 
-    print("num: ", len(user_valid), len(user_test), usernum, itemnum)
+        print("num: ", len(user_valid), len(user_test), usernum, itemnum)
+    
+    except Exception as e:
+        print(f"Error in data_load: {e}")
+        raise e
 
     return [user_train, user_valid, user_test, original_train, usernum, itemnum]
 
-def gen_data(cumulative_preds, model, sess, u_data, u_ind, itemnum, all_users, batch_seq, batch_u, batch_item_idx, args):
-    seq = np.zeros([args.maxlen], dtype=np.int32)
-
-    idx = args.maxlen
-    for i, _idx in zip(u_data['u_data'], range(0,idx)):
-        seq[_idx] = i
-    rated = set(u_data['u_data'])
-    item_idx = list(set([i for i in range(itemnum)]) - rated)
-
-    batch_seq.append(seq)
-    batch_item_idx.append(item_idx)
-    batch_u.append(u_data['u'])
-
-    if (u_ind + 1) % int(args.batch_size / 16) == 0 or u_ind + 1 == len(all_users):
-        predictions = model.predict(sess, batch_u, batch_seq)
-        for batch_ind in range(len(batch_item_idx)):
-            test_item_idx = batch_item_idx[batch_ind]
-            test_predictions = predictions[batch_ind][test_item_idx]
-
-            ranked_items_ind = list((-1*np.array(test_predictions)).argsort())
-            rankeditem_oneuserids = [int(test_item_idx[i]) for i in ranked_items_ind]
-
-            u_batch_ind = batch_u[batch_ind]
-            cumulative_preds[u_batch_ind].append(rankeditem_oneuserids[0])
-
-        batch_seq = []
-        batch_item_idx = []
-        batch_u = []
-
-def gen_data_wrapper(semaphore, cumulative_preds, model, sess, u_data, u_ind, itemnum, all_users, batch_seq, batch_u, batch_item_idx, args):
-    try:
-        gen_data(cumulative_preds, model, sess, u_data, u_ind, itemnum, all_users, batch_seq, batch_u, batch_item_idx, args)
-    finally:
-        semaphore.release()
-
+    
 def data_augment(model, dataset, args, args_sys, sess, gen_num):
-
     print("Data augment")
-    manager = multiprocessing.Manager()
-    [train, valid, test, original_train, usernum, itemnum] = copy.deepcopy(dataset)
+    [train, valid, test, original_train, usernum, itemnum] = dataset.copy()
     all_users = list(train.keys())
-
-    cumulative_preds = manager.dict(defaultdict(list))
-    processes = []
-
-    augment_users_data = {u_ind: {'u_data':train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, []), 'u':u} \
+    cumulative_preds = defaultdict(list)
+    
+    augment_users_data = {u_ind: {'u_data': train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, []), 'u': u} \
                         for u_ind, u in enumerate(all_users) if len(train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, [])) != 0 \
                             or len(train.get(u, []) + valid.get(u, []) + test.get(u, []) + cumulative_preds.get(u, [])) < args_sys.M}
-    
-    semaphore = multiprocessing.Semaphore(6)
 
+    batch_size = 356
+    # Number of batches to process
+    num_batches = (len(all_users) + (batch_size // 16) - 1) // (batch_size // 16)
     for num_ind in range(gen_num):
-        
         batch_seq = []
-        batch_u = []
         batch_item_idx = []
-
-        for u_ind, u_data in augment_users_data.items():
-            p = multiprocessing.Process(target=gen_data_wrapper, \
-                                        args=(semaphore, cumulative_preds, model, sess, u_data, u_ind,\
-                                               itemnum, all_users, batch_seq, batch_u, batch_item_idx, args))
-            processes.append(p)
-            p.start()
-
-        for p in processes:
-            p.join()
-        
-    cumulative_preds_final = {k: list(v) for k, v in cumulative_preds.items()}
-    
-    return cumulative_preds_final
-
-
-
+        batch_u = []
+        for batch_num in range(num_batches):
+            start_idx = batch_num * (batch_size // 16)
+            end_idx = min((batch_num + 1) * (batch_size // 16), len(all_users)) - 1
+            for u_ind in range(start_idx, end_idx):
+                u_data = augment_users_data[all_users[u_ind]]
+                seq = np.zeros([args['maxlen']], dtype=np.int32)
+                
+                idx = min(args['maxlen'], len(u_data['u_data']))
+                seq[:idx] = u_data['u_data'][:idx]
+                
+                rated = set(u_data['u_data'])
+                item_idx = list(set(range(itemnum)) - rated)
+                
+                batch_seq.append(seq)
+                batch_item_idx.append(item_idx)
+                batch_u.append(u_data['u'])
+            
+            # Predict in batch
+            if batch_seq:
+                predictions = model.predict(sess, batch_u, batch_seq)
+                
+                for batch_ind in range(len(batch_item_idx)):
+                    test_item_idx = batch_item_idx[batch_ind]
+                    test_predictions = predictions[batch_ind][test_item_idx]
+                    
+                    ranked_items_ind = list((-1 * np.array(test_predictions)).argsort())
+                    rankeditem_oneuserids = [int(test_item_idx[i]) for i in ranked_items_ind]
+                    
+                    u_batch_ind = batch_u[batch_ind]
+                    cumulative_preds[u_batch_ind].append(rankeditem_oneuserids[0])
+                batch_seq.clear()
+                batch_item_idx.clear()
+                batch_u.clear()
+    return cumulative_preds
 
 def eval_one_interaction(x):
     results = {
@@ -237,8 +270,8 @@ def rank_corrected(r, m, n):
 def create_seq(train, valid, itemnum, u_i_list, args, args_sys, testorvalid):
     rated = set(train[u_i_list["u"]])
     rated.add(0)
-    seq = np.zeros([args.maxlen], dtype=np.int32)
-    idx = args.maxlen
+    seq = np.zeros([args['maxlen']], dtype=np.int32)
+    idx = args['maxlen']
 
     if testorvalid == "test":
         valid_set = set(valid.get(u_i_list["u"], []))
@@ -287,7 +320,7 @@ def predict_eval(model, dataset, args, args_sys, sess, testorvalid):
         batch_item_idx.append(item_idx)
         batch_u.append(u_i_list["u"])
 
-        if len(batch_u) % int(args.batch_size / 8) == 0 or u_ind == len(eval_data):
+        if len(batch_u) % int(args['batch_size'] / 8) == 0 or u_ind == len(eval_data):
             predictions = model.predict(sess, batch_u, batch_seq)
             for pred_ind in range(predictions.shape[0]):
                 all_predictions_results.append(predictions[pred_ind])
