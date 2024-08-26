@@ -1,0 +1,42 @@
+2024-08-26 09:09:02 - ERROR StatusLogger Reconfiguration failed: No configuration found for 'f2a0b8e' at 'null' in 'null'
+2024-08-26 09:09:02 - ERROR StatusLogger Reconfiguration failed: No configuration found for 'Default' at 'null' in 'null'
+2024-08-26 09:09:02 - 24/08/26 09:09:02 WARN Utils: Your hostname, server114 resolves to a loopback address: 127.0.1.1; using 118.68.218.114 instead (on interface enp129s0f0)
+2024-08-26 09:09:02 - 24/08/26 09:09:02 WARN Utils: Set SPARK_LOCAL_IP if you need to bind to another address
+2024-08-26 09:09:03 - Setting default log level to "WARN".
+2024-08-26 09:09:03 - To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+2024-08-26 09:09:03 - 24/08/26 09:09:03 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+2024-08-26 09:09:03 - 24/08/26 09:09:03 WARN SparkConf: Note that spark.local.dir will be overridden by the value set by the cluster manager (via SPARK_LOCAL_DIRS in mesos/standalone/kubernetes and LOCAL_DIRS in YARN).
+2024-08-26 09:09:05 - [I 2024-08-26 09:09:05,236] A new study created in memory with name: no-name-206beb38-2480-45d4-8805-ced20a555f4b
+2024-08-26 09:09:06 - Physical cores: 24
+2024-08-26 09:09:06 - Logical cores: 48
+2024-08-26 09:09:06 - Total memory: 125.76 GB
+2024-08-26 09:09:06 - Available memory: 109.13 GB
+2024-08-26 09:09:06 - Used memory: 15.47 GB
+2024-08-26 09:09:06 - Free memory: 4.63 GB
+2024-08-26 09:09:06 - Enough memory available to set up spark session and spark session created with 10 cores.
+2024-08-26 09:09:06 - Starting Spark session...
+2024-08-26 09:09:06 - Starting Optuna optimization...
+2024-08-26 09:09:06 - Load file and sort
+2024-08-26 09:09:06 - data users:  22363
+2024-08-26 09:09:06 - data items:  12101
+2024-08-26 09:09:06 - data instances:  153776
+2024-08-26 09:09:06 - Load file and sort
+2024-08-26 09:09:06 - data users:  22363
+2024-08-26 09:09:06 - data items:  12101
+2024-08-26 09:09:06 - data instances:  22363
+2024-08-26 09:09:06 - Load file and sort
+2024-08-26 09:09:06 - data users:  22363
+2024-08-26 09:09:06 - data items:  12101
+2024-08-26 09:09:06 - data instances:  22363
+2024-08-26 09:09:06 - num:  22363 22363 22363 12101
+2024-08-26 09:09:06 - Execution time for load data: %s 00:00:00
+2024-08-26 09:09:06 - CUDA_VISIBLE_DEVICES: 3,5,6
+2024-08-26 09:09:06 - Available GPUs: [PhysicalDevice(name='/physical_device:GPU:0', device_type='GPU'), PhysicalDevice(name='/physical_device:GPU:1', device_type='GPU'), PhysicalDevice(name='/physical_device:GPU:2', device_type='GPU')]
+2024-08-26 09:09:06 - args: {'hidden_units': 160, 'batch_size': 64, 'num_blocks': 1, 'dropout_rate': 0.2, 'lr': 3.5895271732069945e-05, 'l2_emb': 3.614201043559461e-06, 'num_heads': 4, 'maxlen': 100, 'num_epochs': 10}
+2024-08-26 09:09:06 - 2024-08-26 09:09:06.927225: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+2024-08-26 09:09:06 - To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-08-26 09:09:08 - 2024-08-26 09:09:08.699540: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 9417 MB memory:  -> device: 0, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:82:00.0, compute capability: 7.5
+2024-08-26 09:09:08 - 2024-08-26 09:09:08.702708: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:1 with 9417 MB memory:  -> device: 1, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:89:00.0, compute capability: 7.5
+2024-08-26 09:09:08 - 2024-08-26 09:09:08.704249: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:2 with 9417 MB memory:  -> device: 2, name: NVIDIA GeForce RTX 2080 Ti, pci bus id: 0000:8a:00.0, compute capability: 7.5
+2024-08-26 09:09:09 - WARNING:tensorflow:From /home/yenlh/temporal_recommendation/ASReP/pipeline/hyperparameter_tuning.py:106: The name tf.keras.backend.set_session is deprecated. Please use tf.compat.v1.keras.backend.set_session instead.
+2024-08-26 09:09:09 - 

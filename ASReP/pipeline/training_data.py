@@ -39,8 +39,14 @@ parser.add_argument('--aug_traindata', default=-1, type=int)
 
 if __name__ == '__main__':
     args_sys = parser.parse_args()
+    args={}
     with open(os.path.join(FIX_PATH,'best_params.txt'), 'r') as f:
-        args = json.load(f)
+        for line in f:
+            key, value = line.strip().split(":")
+            try:
+                args[key] = eval(value)
+            except:
+                args[key] = value
     print("List GPU devices used")
     print(device_lib.list_local_devices())
     start = time.time()
@@ -49,7 +55,7 @@ if __name__ == '__main__':
     print("Execution time for training and evaluate: %s", time.strftime("%H:%M:%S", time.gmtime(end)))
 
     [user_train, user_valid, user_test, original_train, usernum, itemnum] = dataset
-    num_batch = int(len(user_train) / args.batch_size)
+    num_batch = int(len(user_train) / args['batch_size'])
     cc = []
     for u in user_train:
         cc.append(len(user_train[u]))
@@ -66,13 +72,13 @@ if __name__ == '__main__':
     config.allow_soft_placement = True
     sess = tf.compat.v1.Session(config=config)
 
-    sampler = WarpSampler(user_train, usernum, itemnum, batch_size=args.batch_size, maxlen=args.maxlen, n_workers=3)
+    sampler = WarpSampler(user_train, usernum, itemnum, batch_size=args['batch_size'], maxlen=args['maxlen'], n_workers=3)
     model = Model(usernum, itemnum, args)
     #sess.run(tf.global_variables_initializer())
-    aug_data_signature = './aug_data/{}/lr_{}_maxlen_{}_hsize_{}_nblocks_{}_drate_{}_l2_{}_nheads_{}_gen_num_{}_M_{}'.format(args_sys.dataset, args.lr, args.maxlen, args.hidden_units, args.num_blocks, args.dropout_rate, args.l2_emb, args.num_heads, args_sys.reversed_gen_number, args_sys.M)
+    aug_data_signature = './aug_data/{}/lr_{}_maxlen_{}_hsize_{}_nblocks_{}_drate_{}_l2_{}_nheads_{}_gen_num_{}_M_{}'.format(args_sys.dataset, args['lr'], args['maxlen'], args['hidden_units'], args['num_blocks'], args['dropout_rate'], args['l2_emb'], args['num_heads'], args_sys.reversed_gen_number, args_sys.M)
     print(aug_data_signature)
 
-    model_signature = 'lr_{}_maxlen_{}_hsize_{}_nblocks_{}_drate_{}_l2_{}_nheads_{}_gen_num_{}'.format(args.lr, args.maxlen, args.hidden_units, args.num_blocks, args.dropout_rate, args.l2_emb, args.num_heads, 5)
+    model_signature = 'lr_{}_maxlen_{}_hsize_{}_nblocks_{}_drate_{}_l2_{}_nheads_{}_gen_num_{}'.format(args['lr'], args['maxlen'], args['hidden_units'], args['num_blocks'], args['dropout_rate'], args['l2_emb'], args['num_heads'], 5)
 
     if not os.path.isdir(os.path.join(FIX_PATH, 'aug_data/'+args_sys.dataset)):
         os.makedirs(os.path.join(FIX_PATH, 'aug_data/'+args_sys.dataset))
@@ -89,7 +95,7 @@ if __name__ == '__main__':
     t0 = time.time()
 
     try:
-        for epoch in range(1, args.num_epochs + 1):
+        for epoch in range(1, args['num_epochs'] + 1):
 
             #print(num_batch)
             for step in range(num_batch):#tqdm(range(num_batch), total=num_batch, ncols=70, leave=False, unit='b'):
@@ -101,11 +107,11 @@ if __name__ == '__main__':
             print('epoch: %d, loss: %8f' % (epoch, loss))
 
 
-            if (epoch % 20 == 0 and epoch >= 200) or epoch == args.num_epochs:
+            if (epoch % 20 == 0 and epoch >= 200) or epoch == args['num_epochs']:
                 t1 = time.time() - t0
                 T += t1
                 print("start testing")
-                RANK_RESULTS_DIR = f"./rank_results/{args.dataset}_pretain_{args.reversed_pretrain}"
+                RANK_RESULTS_DIR = f"./rank_results/{args_sys.dataset}_pretain_{args_sys.reversed_pretrain}"
                 if not os.path.isdir(RANK_RESULTS_DIR):
                     os.makedirs(RANK_RESULTS_DIR)
                 rank_test_file = RANK_RESULTS_DIR + '/' + model_signature + '_predictions.json'
@@ -119,7 +125,7 @@ if __name__ == '__main__':
 
                 del all_predictions_results, all_item_idx, all_u, eval_data, real_train, rankeditems_list, test_indices, scale_pred_list, test_allitems, seq_dicts, all_predictions_results_output
 
-                if not (args.reversed == 1):
+                if not (args_sys.reversed == 1):
                     all_predictions_results, all_item_idx, all_u, eval_data, real_train = \
                         predict_eval(model, dataset, args, args_sys, sess, "valid")
                     rankeditems_list, test_indices, scale_pred_list, test_allitems, seq_dicts, all_predictions_results_output = \
@@ -152,7 +158,7 @@ if __name__ == '__main__':
         exit(1)
 
     if args.reversed == 1:
-        augmented_data = data_augment(model, dataset, args, sess, args.reversed_gen_number)
+        augmented_data = data_augment(model, dataset, args, args_sys, sess, args_sys.reversed_gen_number)
         with open(aug_data_signature+'.txt', 'w') as f:
             for u, aug_ilist in augmented_data.items():
                 for ind, aug_i in enumerate(aug_ilist):

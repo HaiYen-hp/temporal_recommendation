@@ -19,10 +19,7 @@ import socket
 import gc
 # import pycuda.driver as cuda
 # import pycuda.autoinit
-import tracemalloc
 warnings.filterwarnings("ignore")
-
-tracemalloc.start()
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
@@ -42,7 +39,17 @@ parser.add_argument('--reversed_pretrain', default=-1, type=int)
 parser.add_argument('--aug_traindata', default=-1, type=int)
 
 best_recall=np.zeros(3)
-
+param_ini = {
+    'hidden_units': 128,
+    'batch_size': 64,
+    'num_blocks': 2,
+    'dropout_rate': 0.1,
+    'lr': 1e-5,
+    'l2_emb': 1e-6,
+    'num_heads': 5,
+    'maxlen': 100,
+    'num_epochs': 10
+}
 def objective(trial):
     global best_recall
     start = time.time()
@@ -52,7 +59,6 @@ def objective(trial):
     
     # TensorFlow session configuration
     tf.compat.v1.reset_default_graph()
-    tf.compat.v1.keras.backend.clear_session()
     tf.compat.v1.disable_eager_execution()
     print("CUDA_VISIBLE_DEVICES:", os.environ.get("CUDA_VISIBLE_DEVICES"))
     print("Available GPUs:", tf.config.experimental.list_physical_devices('GPU'))                  
@@ -76,14 +82,10 @@ def objective(trial):
             'lr': trial.suggest_float('lr', 1e-5, 1e-2, log=True),
             'l2_emb': trial.suggest_float('l2_emb', 1e-6, 1e-2, log=True),
             'num_heads': num_heads,
-            'maxlen': 100,
-            'num_epochs': 10
+            'maxlen': param_ini['maxlen'],
+            'num_epochs': param_ini['num_epochs']
         }
-        # start = time.time()
-        # dataset = data_load(args_sys.dataset, args, args_sys)
-        # end = time.time() - start
-        # print("Execution time for load data augment: %s", time.strftime("%H:%M:%S", time.gmtime(end)))
-            
+        print('args: {}'.format(args))
         [user_train, user_valid, user_test, original_train, usernum, itemnum] = dataset
 
         sampler = WarpSampler(user_train, usernum, itemnum, batch_size=args['batch_size'], maxlen=args['maxlen'], n_workers=3)
@@ -192,11 +194,6 @@ def objective(trial):
                 saver = tf.compat.v1.train.Saver()
                 saver.save(sess, os.path.join(FIX_PATH,'reversed_models/'+args_sys.dataset+sub_reversed_folder+'/'+model_signature+'.ckpt'))
                 print('Successed save model')
-                
-        snapshot = tracemalloc.take_snapshot()
-        top_stats = snapshot.statistics('lineno')
-        for stat in top_stats[:10]:
-            print(stat)
 
     except Exception as e:
         print("Exception during training and data augmentation:", e)
@@ -211,7 +208,9 @@ def objective(trial):
         del sampler
         del dataset
         del args
+        tf.compat.v1.keras.backend.clear_session()
         gc.collect()
+        tf.compat.v1.keras.backend.clear_session()
 
     return np.mean(t_test['recall']) if 't_test' in locals() else np.mean(best_recall)
 
@@ -232,7 +231,7 @@ if __name__ == '__main__':
         
         study = optuna.create_study(direction='maximize')
         study.optimize(objective, n_trials=10)
-        trials_rdd = spark.sparkContext.parallelize(range(100), numSlices=100)
+        trials_rdd = spark.sparkContext.parallelize(range(10), numSlices=10)
         
         start = time.time()
         # Execute trials
@@ -240,16 +239,16 @@ if __name__ == '__main__':
         # Get the best hyperparameters
         best_trial = study.best_trial
         best_hps = best_trial.params
-        print("Best RECALL: ", -best_trial.value)
+        print("Best RECALL: ", best_trial.value)
         print("Best parameters: ", best_hps)
-        # Save the best parameters to a dictionary
-        json_best_hps = json.dumps(best_hps, indent=4)
-
+        
         # Save the dictionary to a text file
-        os.makedirs(os.path.join(FIX_PATH,'best_params.txt'), exist_ok = True)
         with open(os.path.join(FIX_PATH,'best_params.txt'), 'w') as f:
             for param, value in best_hps.items():
                 f.write(f"{param}: {value}\n")
+            for param, value in param_ini.items():
+                if param not in best_hps:
+                    f.write(f"{param}: {value}\n")
         print("Best parameters saved to {}".format(os.path.join(FIX_PATH,'best_params.txt')))
         end = time.time() - start
         print("Execution time for hyperparamter tuning: %s", time.strftime("%H:%M:%S", time.gmtime(end)))
