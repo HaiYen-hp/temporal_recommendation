@@ -7,18 +7,18 @@
 ## ** Sử dụng **
 
 ### ** Cấu trúc thư mục **
-``
+```bash
 temporal_recommendation
-├── aug_data												# Lưu các file data augmentation
-|				└── tv360/
-|								└── *.txt
+├── aug_data							# Lưu các file data augmentation
+|	└── tv360/
+|		└── *.txt
 ├── data/
-|				└── tv360/
-								├── imap.json 		# Lưu dữ liệu map id item dưới dạng số tuần tự
+|	└── tv360/
+		├── imap.json 					# Lưu dữ liệu map id item dưới dạng số tuần tự
 	
 
 
 
 
 	
-``
+```
